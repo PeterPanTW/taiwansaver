@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Map of Taipei Discounts — TaiwanSaver</title>
+<meta name="description" content="Map of verified discounts for travelers in Taipei. Tap a pin to see the deal and how to redeem it. Free, no app, no booking.">
+<link rel="canonical" href="https://peterpantw.github.io/taiwansaver/map/">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  #map{height:68vh;min-height:420px;width:100%;border-radius:14px;border:1px solid var(--rule);margin:14px 0}
+  .leaflet-popup-content{font-family:inherit;margin:12px 14px}
+  .pop-deal{color:var(--red);font-weight:800;font-size:16px;margin:2px 0}
+  .pop-meta{color:var(--soft);font-size:13px;margin:2px 0 8px}
+  .pop-a{display:inline-block;background:var(--red);color:#fff;padding:7px 12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px}
+  .pop-a.g{background:var(--navy);margin-left:6px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="brand" href="../">Taiwan<b>Saver</b></a>
+  <nav class="nav">
+    <a href="../travelers/">For travelers</a>
+    <a href="../for-business/">For business</a>
+  </nav>
+</div>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="eyebrow">Map · Taipei</p>
+    <h1>Discounts near you</h1>
+    <p class="lead">Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter.</p>
+  </div>
+  <div id="map"></div>
+  <p class="center"><a class="btn ghost" href="../travelers/">Browse as a list →</a></p>
+</main>
+
+<footer class="center">
+  <p>Pins are approximate — use the “Google Maps” link in each pin for exact directions. · TaiwanSaver / Topology Travel</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+// Deal pins — extend this array as new deals are added (later auto-generated from the deals source).
+var deals = [
+  {
+    name: "Yongjin Beer",
+    type: "🍻 Craft beer · Xinyi",
+    discount: "10% off your bill",
+    hours: "Daily 11:00–01:00 (Fri–Sat to 03:00)",
+    lat: 25.0357, lng: 121.5678,
+    url: "../deals/yongjin/",
+    gmaps: "https://www.google.com/maps/search/?api=1&query=No.18+Songren+Rd+Xinyi+Taipei"
+  }
+];
+
+var map = L.map('map');
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+var group = [];
+deals.forEach(function(d){
+  var m = L.marker([d.lat, d.lng]).addTo(map);
+  m.bindPopup(
+    '<div class="pop-deal">'+d.name+'</div>'+
+    '<div class="pop-meta">'+d.type+'<br>'+d.discount+'<br>'+d.hours+'</div>'+
+    '<a class="pop-a" href="'+d.url+'">View deal</a>'+
+    '<a class="pop-a g" href="'+d.gmaps+'" target="_blank" rel="noopener">Google Maps</a>'
+  );
+  group.push([d.lat, d.lng]);
+});
+
+if (group.length === 1) {
+  map.setView(group[0], 16);
+} else {
+  map.fitBounds(group, {padding:[40,40]});
+}
+</script>
+</body>
+</html>
