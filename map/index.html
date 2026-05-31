@@ -8,17 +8,37 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Map of Taipei Discounts — TaiwanSaver</title>
 <meta name="description" content="Map of verified discounts for travelers in Taipei. Tap a pin to see the deal and how to redeem it. Free, no app, no booking.">
+<meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://taiwansaver.com/map/">
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TaiwanSaver">
+<meta property="og:title" content="Map of Taipei Discounts — TaiwanSaver">
+<meta property="og:description" content="Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter.">
+<meta property="og:url" content="https://taiwansaver.com/map/">
+<meta property="og:image" content="https://taiwansaver.com/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Map of Taipei Discounts — TaiwanSaver">
+<meta name="twitter:description" content="Tap a pin to see the deal and how to redeem it. Free — just show the flyer.">
+<meta name="twitter:image" content="https://taiwansaver.com/assets/og.png">
+
+<meta name="theme-color" content="#1D3557">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="stylesheet" href="../assets/style.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
-  #map{height:68vh;min-height:420px;width:100%;border-radius:14px;border:1px solid var(--rule);margin:14px 0}
-  .leaflet-popup-content{font-family:inherit;margin:12px 14px}
-  .pop-deal{color:var(--red);font-weight:800;font-size:16px;margin:2px 0}
-  .pop-meta{color:var(--soft);font-size:13px;margin:2px 0 8px}
-  .pop-a{display:inline-block;background:var(--red);color:#fff;padding:7px 12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px}
-  .pop-a.g{background:var(--navy);margin-left:6px}
+  #map{height:68vh;min-height:420px;width:100%;border-radius:14px;border:1px solid var(--rule);margin:14px 0;background:#eef1f5}
+  #map-fallback{display:none;padding:18px 20px;margin:14px 0;border:1px dashed var(--rule);border-radius:14px;background:#fffbe6;color:var(--ink)}
+  .gm-pop{font-family:inherit;max-width:240px}
+  .gm-pop .pop-name{color:var(--navy);font-weight:800;font-size:16px;margin:0 0 2px}
+  .gm-pop .pop-deal{color:var(--red);font-weight:800;font-size:15px;margin:0 0 4px}
+  .gm-pop .pop-meta{color:var(--soft);font-size:13px;margin:0 0 8px}
+  .gm-pop a{display:inline-block;background:var(--red);color:#fff;padding:7px 12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px}
+  .gm-pop a.g{background:var(--navy);margin-left:6px}
 </style>
 </head>
 <body>
@@ -26,6 +46,7 @@
   <a class="brand" href="../">Taiwan<b>Saver</b></a>
   <nav class="nav">
     <a href="../travelers/">For travelers</a>
+    <a href="../map/">Map</a>
     <a href="../for-business/">For business</a>
   </nav>
 </div>
@@ -37,17 +58,32 @@
     <p class="lead">Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter.</p>
   </div>
   <div id="map"></div>
+  <div id="map-fallback">
+    <b>The interactive map needs a Google Maps API key.</b><br>
+    Add your key to this page (see the comment in the source), or browse the deals as a list below.
+  </div>
   <p class="center"><a class="btn ghost" href="../travelers/">Browse as a list →</a></p>
 </main>
 
 <footer class="center">
-  <p>Pins are approximate — use the “Google Maps” link in each pin for exact directions. · TaiwanSaver / Topology Travel</p>
+  <p>Pins are approximate — use the “Directions” link in each pin for exact navigation. · TaiwanSaver / Topology Travel</p>
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-// Deal pins — extend this array as new deals are added (later auto-generated from the deals source).
+/* ──────────────────────────────────────────────────────────────────────────
+   GOOGLE MAPS SETUP
+   1. Create a key: https://console.cloud.google.com/google/maps-apis/
+      - Enable "Maps JavaScript API" (billing must be enabled; usage is
+        typically within the free monthly credit for a site this size).
+   2. Restrict the key (IMPORTANT — it is public in this page):
+      - Application restriction → "Websites (HTTP referrers)"
+        add:  https://taiwansaver.com/*   and   https://*.taiwansaver.com/*
+      - API restriction → "Maps JavaScript API" only.
+   3. Paste the key below, replacing YOUR_GOOGLE_MAPS_API_KEY.
+   ────────────────────────────────────────────────────────────────────────── */
+var GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
+
+// Deal pins — extend this array as new deals are added.
 var deals = [
   {
     name: "Yongjin Beer",
@@ -78,29 +114,57 @@ var deals = [
   }
 ];
 
-var map = L.map('map');
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
-var group = [];
-deals.forEach(function(d){
-  var m = L.marker([d.lat, d.lng]).addTo(map);
-  m.bindPopup(
-    '<div class="pop-deal">'+d.name+'</div>'+
-    '<div class="pop-meta">'+d.type+'<br>'+d.discount+'<br>'+d.hours+'</div>'+
-    '<a class="pop-a" href="'+d.url+'">View deal</a>'+
-    '<a class="pop-a g" href="'+d.gmaps+'" target="_blank" rel="noopener">Google Maps</a>'
-  );
-  group.push([d.lat, d.lng]);
-});
+// Called by the Google Maps script once it has loaded.
+function initMap(){
+  var map = new google.maps.Map(document.getElementById('map'), {
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true
+  });
+  var bounds = new google.maps.LatLngBounds();
+  var info = new google.maps.InfoWindow();
 
-if (group.length === 1) {
-  map.setView(group[0], 16);
-} else {
-  map.fitBounds(group, {padding:[40,40]});
+  deals.forEach(function(d){
+    var pos = {lat: d.lat, lng: d.lng};
+    var marker = new google.maps.Marker({position: pos, map: map, title: d.name});
+    bounds.extend(pos);
+    marker.addListener('click', function(){
+      info.setContent(
+        '<div class="gm-pop">'+
+          '<p class="pop-name">'+escapeHtml(d.name)+'</p>'+
+          '<p class="pop-deal">'+escapeHtml(d.discount)+'</p>'+
+          '<p class="pop-meta">'+escapeHtml(d.type)+'<br>'+escapeHtml(d.hours)+'</p>'+
+          '<a href="'+d.url+'">View deal</a>'+
+          '<a class="g" href="'+escapeHtml(d.gmaps)+'" target="_blank" rel="noopener">Directions</a>'+
+        '</div>'
+      );
+      info.open(map, marker);
+    });
+  });
+
+  if (deals.length === 1) { map.setCenter(bounds.getCenter()); map.setZoom(16); }
+  else { map.fitBounds(bounds, 48); }
 }
+
+// If the key is missing or the script fails to load, show the fallback.
+function showMapFallback(){
+  document.getElementById('map').style.display = 'none';
+  document.getElementById('map-fallback').style.display = 'block';
+}
+
+(function loadGoogleMaps(){
+  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === "YOUR_GOOGLE_MAPS_API_KEY") {
+    showMapFallback();
+    return;
+  }
+  var s = document.createElement('script');
+  s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(GOOGLE_MAPS_API_KEY) + '&callback=initMap&loading=async';
+  s.async = true;
+  s.onerror = showMapFallback;
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
