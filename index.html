@@ -32,6 +32,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/style.css">
+<script defer src="assets/lang.js"></script>
 
 <script type="application/ld+json">
 {
@@ -62,69 +63,69 @@
 <div class="bar">
   <a class="brand" href="./">Taiwan<b>Saver</b></a>
   <nav class="nav">
-    <a href="travelers/">For travelers</a>
-    <a href="map/">Map</a>
-    <a href="for-business/">For business</a>
+    <a href="travelers/" data-en="For travelers" data-zh="旅客">For travelers</a>
+    <a href="map/" data-en="Map" data-zh="地圖">Map</a>
+    <a href="for-business/" data-en="For business" data-zh="店家合作">For business</a>
+    <button class="langbtn" data-lang-toggle aria-label="切換成中文">中</button>
   </nav>
 </div>
 
 <main>
   <!-- Primary hero: travelers -->
-  <section class="wrap center" style="padding-top:30px">
-    <p class="eyebrow">Taipei · curated by Topology Travel</p>
-    <h1>Real local deals.<br>No tourist traps.</h1>
-    <p class="lead">Taipei discounts for travelers — show the flyer at the counter and save.<br>
-      <span style="font-size:16px">台北在地折扣 · 出示電子 DM 就有折</span></p>
-    <p class="center" style="margin:22px 0 6px">
-      <a class="btn" href="travelers/">See Taipei deals →</a>
-      <a class="btn ghost" href="map/">🗺️ View map</a>
-    </p>
+  <section class="hero-photo">
+    <div class="wrap center hero-inner">
+      <p class="eyebrow" data-en="Taipei · curated by Topology Travel" data-zh="台北 · 真程旅行社嚴選">Taipei · curated by Topology Travel</p>
+      <h1 data-en="Real local deals.<br>No tourist traps." data-zh="在地真折扣。<br>不踩觀光雷。">Real local deals.<br>No tourist traps.</h1>
+      <p class="lead" data-en="Taipei discounts for travelers — show the flyer at the counter and save." data-zh="給旅客的台北折扣 — 出示電子 DM 就有折。">Taipei discounts for travelers — show the flyer at the counter and save.</p>
+      <p class="center" style="margin:22px 0 6px">
+        <a class="btn" href="travelers/" data-en="See Taipei deals →" data-zh="看台北折扣 →">See Taipei deals →</a>
+        <a class="btn ghost-light" href="map/" data-en="🗺️ View map" data-zh="🗺️ 看地圖">🗺️ View map</a>
+      </p>
+    </div>
   </section>
 
   <!-- Trust badges -->
   <section class="wrap">
     <ul class="badges">
-      <li>✓ Free for travelers</li>
-      <li>✓ No app</li>
-      <li>✓ No booking</li>
-      <li>✓ No signup</li>
-      <li>✓ Hand-picked by 真程旅行社</li>
+      <li data-en="✓ Free for travelers" data-zh="✓ 旅客免費">✓ Free for travelers</li>
+      <li data-en="✓ No app" data-zh="✓ 免下載 App">✓ No app</li>
+      <li data-en="✓ No booking" data-zh="✓ 免預約">✓ No booking</li>
+      <li data-en="✓ No signup" data-zh="✓ 免註冊">✓ No signup</li>
+      <li data-en="✓ Hand-picked by 真程旅行社" data-zh="✓ 真程旅行社嚴選">✓ Hand-picked by 真程旅行社</li>
     </ul>
   </section>
 
   <!-- Real deals, on the homepage -->
   <section class="wrap">
-    <h2 class="center">This week in Taipei</h2>
+    <h2 class="center" data-en="This week in Taipei" data-zh="本週台北精選">This week in Taipei</h2>
     <div class="grid">
       <a class="card" href="deals/yongjin/">
-        <p class="tag">🍻 Craft beer · Xinyi</p>
-        <p class="deal">10% off your bill</p>
-        <p>Yongjin Beer — craft beer &amp; boba. Happy hour 2nd beer 50% off.</p>
-        <span class="go" style="color:var(--red);font-weight:700">View deal →</span>
+        <p class="tag" data-en="🍻 Craft beer · Xinyi" data-zh="🍻 精釀啤酒 · 信義">🍻 Craft beer · Xinyi</p>
+        <p class="deal" data-en="10% off your bill" data-zh="全單 9 折">10% off your bill</p>
+        <p data-en="Yongjin Beer — craft beer &amp; boba. Happy hour 2nd beer 50% off." data-zh="湧金啤酒 — 精釀啤酒 × 珍珠。歡樂時光第二杯 5 折。">Yongjin Beer — craft beer &amp; boba. Happy hour 2nd beer 50% off.</p>
+        <span class="go" style="color:var(--red);font-weight:700" data-en="View deal →" data-zh="看優惠 →">View deal →</span>
       </a>
       <a class="card" href="deals/placebo/">
-        <p class="tag">🍸 Cocktail bar · Xinyi</p>
-        <p class="deal">Free welcome drink</p>
-        <p>Placebo (安慰劑) — a Chinese-style literary cocktail bar. Open from 8pm.</p>
-        <span class="go" style="color:var(--red);font-weight:700">View deal →</span>
+        <p class="tag" data-en="🍸 Cocktail bar · Xinyi" data-zh="🍸 調酒吧 · 信義">🍸 Cocktail bar · Xinyi</p>
+        <p class="deal" data-en="Free welcome drink" data-zh="免費迎賓飲料">Free welcome drink</p>
+        <p data-en="Placebo (安慰劑) — a Chinese-style literary cocktail bar. Open from 8pm." data-zh="安慰劑 Placebo — 中式文人風調酒吧,晚上 8 點開門。">Placebo (安慰劑) — a Chinese-style literary cocktail bar. Open from 8pm.</p>
+        <span class="go" style="color:var(--red);font-weight:700" data-en="View deal →" data-zh="看優惠 →">View deal →</span>
       </a>
       <a class="card" href="deals/isotope/">
-        <p class="tag">🍸 Cocktail bar · Taipei Main Station</p>
-        <p class="deal">Free welcome drink</p>
-        <p>Isotope (同位素) — a Gothic, cathedral-style bar. One spirit, three ways.</p>
-        <span class="go" style="color:var(--red);font-weight:700">View deal →</span>
+        <p class="tag" data-en="🍸 Cocktail bar · Taipei Main Station" data-zh="🍸 調酒吧 · 台北車站">🍸 Cocktail bar · Taipei Main Station</p>
+        <p class="deal" data-en="Free welcome drink" data-zh="免費迎賓飲料">Free welcome drink</p>
+        <p data-en="Isotope (同位素) — a Gothic, cathedral-style bar. One spirit, three ways." data-zh="同位素 Isotope — 哥德教堂風調酒吧,同一基酒、三種變化。">Isotope (同位素) — a Gothic, cathedral-style bar. One spirit, three ways.</p>
+        <span class="go" style="color:var(--red);font-weight:700" data-en="View deal →" data-zh="看優惠 →">View deal →</span>
       </a>
     </div>
-    <p class="center"><a class="btn navy" href="travelers/">Browse all deals →</a></p>
+    <p class="center"><a class="btn navy" href="travelers/" data-en="Browse all deals →" data-zh="瀏覽所有優惠 →">Browse all deals →</a></p>
   </section>
 
   <!-- Secondary: business -->
   <section class="wrap">
     <div class="bizband">
-      <div>
-        <b>經營一家店?</b> 零上架費,只在成交時抽 10%。讓真程幫你帶來觀光客。
-      </div>
-      <a class="btn yellow" href="for-business/">了解合作方式 →</a>
+      <div data-en="<b>Run a business?</b> Zero listing fee — pay 10% only on a successful redemption. Let Topology Travel bring you travelers." data-zh="<b>經營一家店?</b> 零上架費,只在成交時抽 10%。讓真程幫你帶來觀光客。"><b>Run a business?</b> Zero listing fee — pay 10% only on a successful redemption. Let Topology Travel bring you travelers.</div>
+      <a class="btn yellow" href="for-business/" data-en="See how it works →" data-zh="了解合作方式 →">See how it works →</a>
     </div>
   </section>
 </main>

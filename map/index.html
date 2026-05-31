@@ -30,6 +30,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="stylesheet" href="../assets/style.css">
+<script defer src="../assets/lang.js"></script>
 <style>
   #map{height:68vh;min-height:420px;width:100%;border-radius:14px;border:1px solid var(--rule);margin:14px 0;background:#eef1f5}
   #map-fallback{display:none;padding:18px 20px;margin:14px 0;border:1px dashed var(--rule);border-radius:14px;background:#fffbe6;color:var(--ink)}
@@ -45,28 +46,29 @@
 <div class="bar">
   <a class="brand" href="../">Taiwan<b>Saver</b></a>
   <nav class="nav">
-    <a href="../travelers/">For travelers</a>
-    <a href="../map/">Map</a>
-    <a href="../for-business/">For business</a>
+    <a href="../travelers/" data-en="For travelers" data-zh="旅客">For travelers</a>
+    <a href="../map/" data-en="Map" data-zh="地圖">Map</a>
+    <a href="../for-business/" data-en="For business" data-zh="店家合作">For business</a>
+    <button class="langbtn" data-lang-toggle aria-label="切換成中文">中</button>
   </nav>
 </div>
 
 <main class="wrap">
   <div class="hero">
-    <p class="eyebrow">Map · Taipei</p>
-    <h1>Discounts near you</h1>
-    <p class="lead">Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter.</p>
+    <p class="eyebrow" data-en="Map · Taipei" data-zh="地圖 · 台北">Map · Taipei</p>
+    <h1 data-en="Discounts near you" data-zh="你附近的折扣">Discounts near you</h1>
+    <p class="lead" data-en="Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter." data-zh="點圖釘看折扣和使用方式。免費 — 到店出示電子 DM 即可。">Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter.</p>
   </div>
   <div id="map"></div>
   <div id="map-fallback">
-    <b>The interactive map needs a Google Maps API key.</b><br>
-    Add your key to this page (see the comment in the source), or browse the deals as a list below.
+    <b data-en="The interactive map needs a Google Maps API key." data-zh="互動地圖需要 Google Maps API 金鑰。">The interactive map needs a Google Maps API key.</b><br>
+    <span data-en="Add your key to this page (see the comment in the source), or browse the deals as a list below." data-zh="請在本頁加入金鑰（見原始碼註解），或改看下方折扣清單。">Add your key to this page (see the comment in the source), or browse the deals as a list below.</span>
   </div>
-  <p class="center"><a class="btn ghost" href="../travelers/">Browse as a list →</a></p>
+  <p class="center"><a class="btn ghost" href="../travelers/" data-en="Browse as a list →" data-zh="改看清單 →">Browse as a list →</a></p>
 </main>
 
 <footer class="center">
-  <p>Pins are approximate — use the “Directions” link in each pin for exact navigation. · TaiwanSaver / Topology Travel</p>
+  <p data-en="Pins are approximate — use the “Directions” link in each pin for exact navigation. · TaiwanSaver / Topology Travel" data-zh="圖釘位置為約略 — 請用各圖釘的「Directions」連結導航。· TaiwanSaver / 真程旅行社">Pins are approximate — use the “Directions” link in each pin for exact navigation. · TaiwanSaver / Topology Travel</p>
 </footer>
 
 <script>
