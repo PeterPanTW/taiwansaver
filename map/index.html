@@ -7,7 +7,7 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-LFG20DT8BH');</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Map of Taipei Discounts — TaiwanSaver</title>
-<meta name="description" content="Map of verified discounts for travelers in Taipei. See the pins, then show the flyer at the counter to save. Free, no app, no booking.">
+<meta name="description" content="Map of verified discounts for travelers in Taipei. Tap a pin to see the deal and how to redeem it. Free, no app, no booking.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://taiwansaver.com/map/">
 
@@ -15,7 +15,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TaiwanSaver">
 <meta property="og:title" content="Map of Taipei Discounts — TaiwanSaver">
-<meta property="og:description" content="See the pins, then show the flyer at the counter to save. Free — no app, no booking.">
+<meta property="og:description" content="Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter.">
 <meta property="og:url" content="https://taiwansaver.com/map/">
 <meta property="og:image" content="https://taiwansaver.com/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -23,7 +23,7 @@
 <meta property="og:locale" content="en">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Map of Taipei Discounts — TaiwanSaver">
-<meta name="twitter:description" content="See the pins, then show the flyer at the counter to save.">
+<meta name="twitter:description" content="Tap a pin to see the deal and how to redeem it. Free — just show the flyer.">
 <meta name="twitter:image" content="https://taiwansaver.com/assets/og.png">
 
 <meta name="theme-color" content="#1D3557">
@@ -31,9 +31,16 @@
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="stylesheet" href="../assets/style.css">
 <script defer src="../assets/lang.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
-  .map-frame{height:60vh;min-height:380px;width:100%;border-radius:14px;border:1px solid var(--rule);margin:14px 0;background:#eef1f5;display:block}
-  #map-todo{padding:16px 20px;margin:14px 0;border:1px dashed var(--rule);border-radius:14px;background:#fffbe6;color:var(--ink)}
+  #map{height:60vh;min-height:380px;width:100%;border-radius:14px;border:1px solid var(--rule);margin:14px 0;background:#eef1f5}
+  .leaflet-popup-content{font-family:inherit;margin:12px 14px}
+  .pop-name{color:var(--navy);font-weight:800;font-size:16px;margin:0 0 2px}
+  .pop-deal{color:var(--red);font-weight:800;font-size:15px;margin:0 0 4px}
+  .pop-meta{color:var(--soft);font-size:13px;margin:0 0 8px}
+  .pop-a{display:inline-block;background:var(--red);color:#fff;padding:7px 12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px}
+  .pop-a.g{background:var(--navy);margin-left:6px}
   .map-list{list-style:none;padding:0;margin:18px 0}
   .map-list li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;
     background:#fff;border:1px solid var(--rule);border-radius:12px;padding:14px 16px;margin:10px 0}
@@ -60,19 +67,10 @@
   <div class="hero">
     <p class="eyebrow" data-en="Map · Taipei" data-zh="地圖 · 台北">Map · Taipei</p>
     <h1 data-en="Discounts near you" data-zh="你附近的折扣">Discounts near you</h1>
-    <p class="lead" data-en="See the pins on the map, then tap a deal below for details and directions. Free — just show the flyer at the counter." data-zh="先看地圖上的圖釘,再點下方的折扣看詳情與導航。免費 — 到店出示電子 DM 即可。">See the pins on the map, then tap a deal below for details and directions. Free — just show the flyer at the counter.</p>
+    <p class="lead" data-en="Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter." data-zh="點圖釘看折扣和使用方式。免費 — 到店出示電子 DM 即可。">Tap a pin to see the deal and how to redeem it. Free — just show the flyer at the counter.</p>
   </div>
 
-  <!-- Google My Maps embed appears here once configured (see comment at the bottom). -->
-  <iframe id="map-embed" class="map-frame" style="display:none" loading="lazy"
-    referrerpolicy="no-referrer-when-downgrade"
-    title="TaiwanSaver Taipei deals map"></iframe>
-
-  <!-- Shown until the My Maps embed URL is set. The deal list below always works regardless. -->
-  <div id="map-todo">
-    <b data-en="Map embed not set up yet." data-zh="地圖內嵌尚未設定。">Map embed not set up yet.</b>
-    <span data-en="Paste a Google “My Maps” embed URL into this page (see the comment in the source). The deal list below works either way." data-zh="請把 Google「我的地圖」內嵌網址貼到本頁（見原始碼註解）。下方折扣清單不受影響、隨時可用。">Paste a Google “My Maps” embed URL into this page (see the comment in the source). The deal list below works either way.</span>
-  </div>
+  <div id="map"></div>
 
   <h2 data-en="All Taipei deals" data-zh="所有台北折扣">All Taipei deals</h2>
   <ul class="map-list">
@@ -110,32 +108,84 @@
   <p data-en="Pins are approximate — use the “Directions” link on each deal for exact navigation. · TaiwanSaver / Topology Travel" data-zh="圖釘位置為約略 — 請用各折扣的「導航」連結取得精準路線。· TaiwanSaver / 真程旅行社">Pins are approximate — use the “Directions” link on each deal for exact navigation. · TaiwanSaver / Topology Travel</p>
 </footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-/* ──────────────────────────────────────────────────────────────────────────
-   GOOGLE "MY MAPS" EMBED  (no API key, no billing, cannot be abused)
-
-   How to set it up (one-time, ~5 minutes):
-   1. Go to https://www.google.com/maps/d/  and click "Create a new map".
-   2. Add a marker for each deal (search the address, click "Add to map").
-      Name each marker, e.g. "Yongjin Beer — 10% off".
-   3. Top-left: name the map, then Share → set "Anyone with the link can view".
-   4. Three-dot menu (⋮) → "Embed on my site" → copy the src="..." URL.
-      It looks like:  https://www.google.com/maps/d/embed?mid=XXXXXXXX
-   5. Paste that URL between the quotes below, replacing the empty string.
-
-   To add a new deal later: just add a marker in My Maps — no code change needed.
-   ────────────────────────────────────────────────────────────────────────── */
-var MY_MAPS_EMBED_URL = "";
-
-(function () {
-  var frame = document.getElementById('map-embed');
-  var todo  = document.getElementById('map-todo');
-  if (MY_MAPS_EMBED_URL) {
-    frame.src = MY_MAPS_EMBED_URL;
-    frame.style.display = 'block';
-    todo.style.display = 'none';
+/* Interactive map via Leaflet + OpenStreetMap tiles.
+   No API key, no billing, nothing public to abuse. The bilingual deal
+   list above also works on its own if scripts/tiles fail to load.
+   To add a deal: add an entry here and a matching <li> in the list above. */
+var deals = [
+  {
+    name: "Yongjin Beer",
+    en: { type:"🍻 Craft beer · Xinyi", deal:"10% off your bill", hours:"Daily 11:00–01:00 (Fri–Sat to 03:00)", view:"View deal", dir:"Directions" },
+    zh: { type:"🍻 精釀啤酒 · 信義",   deal:"全單 9 折",         hours:"每日 11:00–01:00（週五六至 03:00）", view:"看優惠", dir:"導航" },
+    lat: 25.0375, lng: 121.5683,
+    url: "../deals/yongjin/",
+    gmaps: "https://www.google.com/maps/search/?api=1&query=No.18+Songren+Rd+Xinyi+Taipei"
+  },
+  {
+    name: "Placebo (安慰劑)",
+    en: { type:"🍸 Cocktail bar · Xinyi", deal:"Free welcome drink", hours:"Daily 20:00–02:00 (Fri–Sat to 03:00)", view:"View deal", dir:"Directions" },
+    zh: { type:"🍸 調酒吧 · 信義",        deal:"免費迎賓飲料",       hours:"每日 20:00–02:00（週五六至 03:00）", view:"看優惠", dir:"導航" },
+    lat: 25.0301, lng: 121.5580,
+    url: "../deals/placebo/",
+    gmaps: "https://www.google.com/maps/search/?api=1&query=台北市信義區基隆路二段83號"
+  },
+  {
+    name: "Isotope (同位素)",
+    en: { type:"🍸 Cocktail bar · Taipei Main Station", deal:"Free welcome drink", hours:"Tue–Sun 18:00–01:00 (Fri–Sat to 02:30, Mon closed)", view:"View deal", dir:"Directions" },
+    zh: { type:"🍸 調酒吧 · 台北車站",                   deal:"免費迎賓飲料",       hours:"週二–日 18:00–01:00（週五六至 02:30,週一公休）", view:"看優惠", dir:"導航" },
+    lat: 25.0512, lng: 121.5161,
+    url: "../deals/isotope/",
+    gmaps: "https://www.google.com/maps/search/?api=1&query=台北市大同區長安西路101號"
   }
-})();
+];
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function currentLang(){
+  return (window.TSLang && window.TSLang.get && window.TSLang.get() === "zh") ? "zh" : "en";
+}
+
+function popupHtml(d){
+  var t = d[currentLang()];
+  return '<div class="pop">'+
+    '<p class="pop-name">'+escapeHtml(d.name)+'</p>'+
+    '<p class="pop-deal">'+escapeHtml(t.deal)+'</p>'+
+    '<p class="pop-meta">'+escapeHtml(t.type)+'<br>'+escapeHtml(t.hours)+'</p>'+
+    '<a class="pop-a" href="'+d.url+'">'+escapeHtml(t.view)+'</a>'+
+    '<a class="pop-a g" href="'+escapeHtml(d.gmaps)+'" target="_blank" rel="noopener">'+escapeHtml(t.dir)+'</a>'+
+  '</div>';
+}
+
+var map = L.map('map');
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+var markers = [];
+var bounds = [];
+deals.forEach(function(d){
+  var m = L.marker([d.lat, d.lng]).addTo(map);
+  m.bindPopup(popupHtml(d));
+  m._deal = d;
+  markers.push(m);
+  bounds.push([d.lat, d.lng]);
+});
+
+if (bounds.length === 1) { map.setView(bounds[0], 16); }
+else { map.fitBounds(bounds, {padding:[40,40]}); }
+
+// Re-render any open/!future popups in the chosen language when toggled.
+document.addEventListener('click', function(e){
+  if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-lang-toggle')) {
+    setTimeout(function(){
+      markers.forEach(function(m){ m.setPopupContent(popupHtml(m._deal)); });
+    }, 0);
+  }
+});
 </script>
 </body>
 </html>
