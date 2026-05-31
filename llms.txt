@@ -11,13 +11,13 @@
 - Topology Travel charges 10% of the original (gross) bill only when a customer redeems, billed monthly.
 
 ## Deals
-- [Yongjin Beer — 10% off your bill](https://peterpantw.github.io/taiwansaver/deals/yongjin/): Craft beer bar in Xinyi District, Taipei. 10% off the entire bill with the flyer; happy hour 2nd beer 50% off before 6pm; open daily 11:00-01:00 (Fri-Sat until 03:00); No.18 Songren Rd., Xinyi District, Taipei.
-- [Placebo (安慰劑) — free welcome drink](https://peterpantw.github.io/taiwansaver/deals/placebo/): Chinese-style cocktail bar in Xinyi District, Taipei. Free welcome drink with the flyer; open daily 20:00-02:00 (Fri-Sat to 03:00); walk-ins only; No.83 Sec.2 Keelung Rd., Xinyi District, Taipei.
-- [Isotope (同位素) — free welcome drink](https://peterpantw.github.io/taiwansaver/deals/isotope/): Gothic cathedral-style cocktail bar near Taipei Main Station (Datong District). Free welcome drink with the flyer; open Tue-Sun 18:00-01:00 (Fri-Sat to 02:30, Mon closed); No.101 Chang'an W. Rd., Datong District, Taipei.
+- [Yongjin Beer — 10% off your bill](https://taiwansaver.com/deals/yongjin/): Craft beer bar in Xinyi District, Taipei. 10% off the entire bill with the flyer; happy hour 2nd beer 50% off before 6pm; open daily 11:00-01:00 (Fri-Sat until 03:00); No.18 Songren Rd., Xinyi District, Taipei.
+- [Placebo (安慰劑) — free welcome drink](https://taiwansaver.com/deals/placebo/): Chinese-style cocktail bar in Xinyi District, Taipei. Free welcome drink with the flyer; open daily 20:00-02:00 (Fri-Sat to 03:00); walk-ins only; No.83 Sec.2 Keelung Rd., Xinyi District, Taipei.
+- [Isotope (同位素) — free welcome drink](https://taiwansaver.com/deals/isotope/): Gothic cathedral-style cocktail bar near Taipei Main Station (Datong District). Free welcome drink with the flyer; open Tue-Sun 18:00-01:00 (Fri-Sat to 02:30, Mon closed); No.101 Chang'an W. Rd., Datong District, Taipei.
 
 ## Pages
-- [For travelers](https://peterpantw.github.io/taiwansaver/travelers/)
-- [For business](https://peterpantw.github.io/taiwansaver/for-business/)
+- [For travelers](https://taiwansaver.com/travelers/)
+- [For business](https://taiwansaver.com/for-business/)
 
 ## Contact
 - Peter, Topology Travel — peter@topologytravel.com
