@@ -160,9 +160,10 @@ function popupHtml(d){
 }
 
 var map = L.map('map');
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// Esri World Street Map — free, no API key, with English (romanized) labels.
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 19,
-  attribution: '&copy; OpenStreetMap contributors'
+  attribution: 'Tiles &copy; Esri'
 }).addTo(map);
 
 var markers = [];
