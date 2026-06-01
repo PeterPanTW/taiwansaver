@@ -41,6 +41,9 @@
   .pop-meta{color:var(--soft);font-size:13px;margin:0 0 8px}
   .pop-a{display:inline-block;background:var(--red);color:#fff;padding:7px 12px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px}
   .pop-a.g{background:var(--navy);margin-left:6px}
+  .locate-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+    background:#fff;font-size:18px;text-decoration:none;line-height:1}
+  .locate-btn:hover{background:#f4f4f4}
   .map-list{list-style:none;padding:0;margin:18px 0}
   .map-list li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;
     background:#fff;border:1px solid var(--rule);border-radius:12px;padding:14px 16px;margin:10px 0}
@@ -179,11 +182,54 @@ deals.forEach(function(d){
 if (bounds.length === 1) { map.setView(bounds[0], 16); }
 else { map.fitBounds(bounds, {padding:[40,40]}); }
 
+// ── "Locate me" control ──────────────────────────────────────────────────
+// Uses the browser Geolocation API (free, no key; requires HTTPS).
+var youMarker = null, youCircle = null;
+var LocateControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function () {
+    var btn = L.DomUtil.create('a', 'locate-btn');
+    btn.href = '#';
+    btn.title = (currentLang() === 'zh') ? '顯示我的位置' : 'Show my location';
+    btn.innerHTML = '📍';
+    L.DomEvent.on(btn, 'click', function (e) {
+      L.DomEvent.stop(e);
+      locateUser();
+    });
+    return btn;
+  }
+});
+map.addControl(new LocateControl());
+
+function locateUser() {
+  if (!navigator.geolocation) {
+    alert(currentLang() === 'zh' ? '你的瀏覽器不支援定位。' : 'Your browser does not support location.');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    var ll = [pos.coords.latitude, pos.coords.longitude];
+    var acc = pos.coords.accuracy || 50;
+    if (youMarker) { map.removeLayer(youMarker); map.removeLayer(youCircle); }
+    youCircle = L.circle(ll, { radius: acc, color: '#1D3557', fillColor: '#1D3557', fillOpacity: 0.12, weight: 1 }).addTo(map);
+    youMarker = L.circleMarker(ll, { radius: 7, color: '#fff', weight: 2, fillColor: '#1D3557', fillOpacity: 1 }).addTo(map);
+    youMarker.bindPopup(currentLang() === 'zh' ? '你在這裡' : 'You are here');
+    // Fit the user and all deal pins into view.
+    map.fitBounds(bounds.concat([ll]), { padding: [40, 40] });
+  }, function (err) {
+    var zh = currentLang() === 'zh';
+    var msg = (err.code === 1)
+      ? (zh ? '已拒絕位置權限。請在瀏覽器設定中允許定位後再試。' : 'Location permission denied. Allow location access and try again.')
+      : (zh ? '無法取得你的位置,請再試一次。' : 'Could not get your location. Please try again.');
+    alert(msg);
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}
+
 // Re-render any open/!future popups in the chosen language when toggled.
 document.addEventListener('click', function(e){
   if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-lang-toggle')) {
     setTimeout(function(){
       markers.forEach(function(m){ m.setPopupContent(popupHtml(m._deal)); });
+      if (youMarker) youMarker.setPopupContent(currentLang() === 'zh' ? '你在這裡' : 'You are here');
     }, 0);
   }
 });
