@@ -13,8 +13,8 @@
       var el = nodes[i];
       var val = el.getAttribute("data-" + lang);
       if (val === null) val = el.getAttribute("data-en");
-      // Allow a literal <br> in translations.
-      if (val.indexOf("<br>") !== -1) el.innerHTML = val;
+      // Allow inline HTML (e.g. <b>, <br>, <em>) in translations.
+      if (val.indexOf("<") !== -1) el.innerHTML = val;
       else el.textContent = val;
     }
     var btns = document.querySelectorAll("[data-lang-toggle]");

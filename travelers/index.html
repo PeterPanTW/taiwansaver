@@ -42,7 +42,8 @@
     {"@type":"ListItem","position":2,"url":"https://taiwansaver.com/deals/placebo/","name":"Placebo (安慰劑) — free welcome drink"},
     {"@type":"ListItem","position":3,"url":"https://taiwansaver.com/deals/isotope/","name":"Isotope (同位素) — free welcome drink"},
     {"@type":"ListItem","position":4,"url":"https://taiwansaver.com/deals/gogoout/","name":"GoGoOut Car Rental — NT$200 free credit for new members"},
-    {"@type":"ListItem","position":5,"url":"https://taiwansaver.com/deals/qkesim/","name":"QK eSIM — 15% off travel data eSIM with code Top85"}
+    {"@type":"ListItem","position":5,"url":"https://taiwansaver.com/deals/qkesim/","name":"QK eSIM — 15% off travel data eSIM with code Top85"},
+    {"@type":"ListItem","position":6,"url":"https://taiwansaver.com/deals/double8/","name":"Double 8 (岩究所) — Dadaocheng climbing gym, discount coming soon"}
   ]
 }
 </script>
@@ -72,9 +73,9 @@
     <div class="card"><span class="num">3</span><h3 data-en="Show it at the door" data-zh="到店出示">Show it at the door</h3><p data-en="Staff applies your discount. Pay less." data-zh="店員幫你套用折扣,結帳更省。">Staff applies your discount. Pay less.</p></div>
   </div>
 
-  <h2 data-en="This week's deals · Taipei" data-zh="本週折扣 · 台北">This week's deals · Taipei</h2>
+  <h2 data-en="All deals · Taipei" data-zh="所有折扣 · 台北">All deals · Taipei</h2>
   <p><a class="btn navy" href="../map/" data-en="🗺️ View deals on the map →" data-zh="🗺️ 在地圖上看折扣 →">🗺️ View deals on the map →</a></p>
-  <div class="grid">
+  <div class="grid" id="deal-grid">
     <a class="card" href="../deals/yongjin/">
       <p class="tag" data-en="🍻 Craft beer · Xinyi" data-zh="🍻 精釀啤酒 · 信義">🍻 Craft beer · Xinyi</p>
       <p class="deal" data-en="10% off your bill" data-zh="全單 9 折">10% off your bill</p>
@@ -105,10 +106,27 @@
       <p data-en="QK eSIM — get online the moment you land. Scan a QR code, no SIM swap. Enter code Top85 at checkout for 15% off." data-zh="QK eSIM — 一下飛機就能上網。掃 QR Code、免換卡。結帳輸入折扣碼 Top85 享 85 折(省 15%)。">QK eSIM — get online the moment you land. Scan a QR code, no SIM swap. Enter code Top85 at checkout for 15% off.</p>
       <span class="go" style="color:var(--red);font-weight:700" data-en="View deal →" data-zh="看優惠 →">View deal →</span>
     </a>
+    <a class="card" href="../deals/double8/">
+      <p class="tag" data-en="🧗 Climbing gym · Dadaocheng" data-zh="🧗 攀岩館 · 大稻埕">🧗 Climbing gym · Dadaocheng</p>
+      <p class="deal" data-en="Discount coming soon" data-zh="優惠即將推出">Discount coming soon</p>
+      <p data-en="Double 8 (岩究所) — a rock-climbing gym in historic Dadaocheng. Climbing, fitness &amp; gear." data-zh="岩究所 Double 8 — 位於大稻埕的攀岩館，提供攀岩、健身與裝備。">Double 8 (岩究所) — a rock-climbing gym in historic Dadaocheng. Climbing, fitness &amp; gear.</p>
+      <span class="go" style="color:var(--red);font-weight:700" data-en="View →" data-zh="看詳情 →">View →</span>
+    </a>
   </div>
 
   <div class="band" data-en="Free for travelers, always. Every spot is hand-picked by Topology Travel." data-zh="旅客永遠免費。每一間都由真程旅行社親自嚴選。">Free for travelers, always. Every spot is hand-picked by Topology Travel.</div>
 </main>
+
+<script>
+/* Shuffle the deal cards so each visit shows a slightly different order.
+   Cards stay in the static HTML (crawlable by Google/AI); only display order changes. */
+(function(){
+  var g=document.getElementById('deal-grid'); if(!g) return;
+  var cards=Array.prototype.slice.call(g.querySelectorAll('.card'));
+  for(var i=cards.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=cards[i];cards[i]=cards[j];cards[j]=t;}
+  cards.forEach(function(c){g.appendChild(c);});
+})();
+</script>
 
 <footer class="center">
   <p><a href="../" data-en="Home" data-zh="首頁">Home</a> · <a href="../for-business/" data-en="For business" data-zh="店家合作">For business</a> · operated by Topology Travel / 真程旅行社</p>
