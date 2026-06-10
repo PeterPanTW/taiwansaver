@@ -40,7 +40,7 @@ function onNewSubmission(e) {
     if (/test|測試/i.test(name)) { log_('SKIP', name, '疑似測試列，略過', ''); return; }
 
     var d = {
-      name: name, hours: pick('開門'), phone: pick('聯絡電話'), address: pick('地址'),
+      name: name, hours: pick('開門'), phone: pick('聯絡電話'), address: pick('Address'),
       discount: pick('折扣'), category: pick('類型'), ig: pick('IG'), photos: pick('照片'),
       contactName: pick('聯絡人姓名'), contactEmail: pick('Email'), submitterEmail: pick('電子郵件'),
       contactMobile: pick('聯絡人電話'), social: pick('LINE')
@@ -143,7 +143,7 @@ function backfillExisting() {
   var data = sh.getDataRange().getValues();
   var H = data[0];
   function ci(kw) { for (var i = 0; i < H.length; i++) { if (String(H[i]).indexOf(kw) !== -1) return i; } return -1; }
-  var iName = ci('店名'), iHours = ci('開門'), iPhone = ci('聯絡電話'), iAddr = ci('地址'),
+  var iName = ci('店名'), iHours = ci('開門'), iPhone = ci('聯絡電話'), iAddr = ci('Address'),
       iDisc = ci('折扣'), iCat = ci('類型'), iIg = ci('IG'), iPhoto = ci('照片');
   function g(row, i) { return i >= 0 ? String(row[i] || '').trim() : ''; }
   var done = 0, skip = 0;
@@ -209,7 +209,7 @@ function buildDealHtml_(slug, d) {
   var discEN = tr(d.discount, 'en'), discZH = tr(d.discount, 'zh-TW');
   var hoursEN = tr(d.hours, 'en'), hoursZH = tr(d.hours, 'zh-TW');
   var catEN = d.category || 'Local deal', catZH = d.category || '在地優惠';
-  var ph = d.phone ? ' &middot; ☎ ' + d.phone : '';
+  var ph = d.phone ? ' · ☎ ' + d.phone : '';
   var sumEN = d.name + ' offers travelers ' + discEN + '. Show the TaiwanSaver flyer at the counter to redeem. ' + hoursEN + ' Address: ' + d.address + '.';
   var sumZH = d.name + '：出示 TaiwanSaver 電子 DM 即可享「' + discZH + '」。' + hoursZH + '。地址：' + d.address + '。';
   var jsonld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: d.name, description: d.name + ' — ' + discEN + '. Show the TaiwanSaver flyer to redeem.', address: { '@type': 'PostalAddress', streetAddress: d.address, addressRegion: 'Taipei', addressCountry: 'TW' }, telephone: d.phone, url: 'https://taiwansaver.com/deals/' + slug + '/', makesOffer: { '@type': 'Offer', name: discEN } };
