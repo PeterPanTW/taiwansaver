@@ -200,27 +200,38 @@ function log_(status, store, detail, url) {
   sh.appendRow([new Date(), status, store, detail, url]);
 }
 
-/** 產生 AI 友善的公開 deal 頁（不含內部聯絡資訊） */
+/** 產生「中英雙語」公開 deal 頁：每個元素都有 data-en/data-zh，lang.js 可切換、內容鏡像。
+ *  商家輸入用 LanguageApp 自動翻成兩種語言；UI 文字寫死雙語。不含內部聯絡資訊。 */
 function buildDealHtml_(slug, d) {
   function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-  var jsonld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: d.name, description: d.name + ' — ' + d.discount + '. Show the TaiwanSaver flyer to redeem.', address: { '@type': 'PostalAddress', streetAddress: d.address, addressRegion: 'Taipei', addressCountry: 'TW' }, telephone: d.phone, url: 'https://taiwansaver.com/deals/' + slug + '/', makesOffer: { '@type': 'Offer', name: d.discount } };
+  function tr(t, tgt) { if (!t) return ''; try { return LanguageApp.translate(t, '', tgt); } catch (e) { return t; } }
+  function bi(tag, attrs, en, zh) { return '<' + tag + (attrs ? ' ' + attrs : '') + ' data-en="' + esc(en) + '" data-zh="' + esc(zh) + '">' + esc(en) + '</' + tag + '>'; }
+  var discEN = tr(d.discount, 'en'), discZH = tr(d.discount, 'zh-TW');
+  var hoursEN = tr(d.hours, 'en'), hoursZH = tr(d.hours, 'zh-TW');
+  var catEN = d.category || 'Local deal', catZH = d.category || '在地優惠';
+  var ph = d.phone ? ' &middot; ☎ ' + d.phone : '';
+  var sumEN = d.name + ' offers travelers ' + discEN + '. Show the TaiwanSaver flyer at the counter to redeem. ' + hoursEN + ' Address: ' + d.address + '.';
+  var sumZH = d.name + '：出示 TaiwanSaver 電子 DM 即可享「' + discZH + '」。' + hoursZH + '。地址：' + d.address + '。';
+  var jsonld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: d.name, description: d.name + ' — ' + discEN + '. Show the TaiwanSaver flyer to redeem.', address: { '@type': 'PostalAddress', streetAddress: d.address, addressRegion: 'Taipei', addressCountry: 'TW' }, telephone: d.phone, url: 'https://taiwansaver.com/deals/' + slug + '/', makesOffer: { '@type': 'Offer', name: discEN } };
   return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
 '<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
-'<title>' + esc(d.name) + ' — ' + esc(d.discount) + ' | Taipei | TaiwanSaver</title>\n' +
-'<meta name="description" content="' + esc(d.name) + ' in Taipei offers ' + esc(d.discount) + '. Show the TaiwanSaver flyer at the counter. ' + esc(d.hours) + '">\n' +
+'<title>' + esc(d.name) + ' — ' + esc(discEN) + ' | Taipei | TaiwanSaver</title>\n' +
+'<meta name="description" content="' + esc(sumEN) + '">\n' +
 '<link rel="canonical" href="https://taiwansaver.com/deals/' + slug + '/">\n' +
 '<link rel="stylesheet" href="https://taiwansaver.com/assets/style.css">\n' +
 '<script defer src="https://taiwansaver.com/assets/lang.js"></script>\n' +
 '<script type="application/ld+json">' + JSON.stringify(jsonld) + '</script>\n</head>\n<body>\n' +
 '<div class="bar"><a class="brand" href="https://taiwansaver.com/">Taiwan<b>Saver</b></a>\n' +
-'<nav class="nav"><a href="https://taiwansaver.com/travelers/">For travelers</a> <a href="https://taiwansaver.com/map/">Map</a> <a href="https://taiwansaver.com/for-business/">For business</a></nav></div>\n' +
-'<main class="wrap">\n<p class="eyebrow">' + (esc(d.category) || 'Local deal') + '</p>\n<h1>' + esc(d.name) + '</h1>\n' +
-'<p class="deal" style="font-size:22px;color:var(--red);font-weight:800">' + esc(d.discount) + '</p>\n' +
-'<p class="summary">' + esc(d.name) + ' offers travelers <b>' + esc(d.discount) + '</b>. Show the TaiwanSaver flyer at the counter to redeem. ' + esc(d.hours) + ' Address: ' + esc(d.address) + '.</p>\n' +
-'<h2>What is the discount?</h2><p>' + esc(d.discount) + ' — show the flyer at the counter, no booking needed.</p>\n' +
-'<h2>Where is it?</h2><p>' + esc(d.address) + (d.phone ? ' &middot; ☎ ' + esc(d.phone) : '') + '</p>\n' +
-'<h2>What are the opening hours?</h2><p>' + esc(d.hours) + '</p>\n' +
-'<h2>How do I redeem it?</h2><ol><li>Save or screenshot the TaiwanSaver flyer.</li><li>Show it at the counter.</li><li>Enjoy your discount.</li></ol>\n' +
-'<div class="callout"><b>Your flyer</b> &middot; Recommended by Topology Travel. Show this page at the counter to enjoy the offer.</div>\n' +
+'<nav class="nav"><a href="https://taiwansaver.com/travelers/" data-en="For travelers" data-zh="旅客">For travelers</a> <a href="https://taiwansaver.com/map/" data-en="Map" data-zh="地圖">Map</a> <a href="https://taiwansaver.com/for-business/" data-en="For business" data-zh="店家合作">For business</a> <button class="langbtn" data-lang-toggle aria-label="切換成中文">中</button></nav></div>\n' +
+'<main class="wrap">\n' +
+bi('p', 'class="eyebrow"', catEN, catZH) + '\n' +
+bi('h1', '', d.name, d.name) + '\n' +
+bi('p', 'class="deal" style="font-size:22px;color:var(--red);font-weight:800"', discEN, discZH) + '\n' +
+bi('p', 'class="summary"', sumEN, sumZH) + '\n' +
+bi('h2', '', 'What is the discount?', '有什麼折扣？') + bi('p', '', discEN + ' — show the flyer at the counter, no booking needed.', discZH + ' — 到店出示電子 DM 即可，免預約。') + '\n' +
+bi('h2', '', 'Where is it?', '在哪裡？') + bi('p', '', d.address + ph, d.address + ph) + '\n' +
+bi('h2', '', 'What are the opening hours?', '營業時間？') + bi('p', '', hoursEN, hoursZH) + '\n' +
+bi('h2', '', 'How do I redeem it?', '怎麼兌換？') + '<ol>' + bi('li', '', 'Save or screenshot the TaiwanSaver flyer.', '存下或截圖 TaiwanSaver 電子 DM。') + bi('li', '', 'Show it at the counter.', '到店出示。') + bi('li', '', 'Enjoy your discount.', '享受折扣。') + '</ol>\n' +
+'<div class="callout" data-en="<b>Your flyer</b> &middot; Recommended by Topology Travel. Show this page at the counter to enjoy the offer." data-zh="<b>你的電子 DM</b> &middot; 真程旅行社推薦。到店出示本頁即可享優惠。"><b>Your flyer</b> &middot; Recommended by Topology Travel. Show this page at the counter to enjoy the offer.</div>\n' +
 '</main>\n</body>\n</html>\n';
 }
