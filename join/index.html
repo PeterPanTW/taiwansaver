@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LFG20DT8BH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-LFG20DT8BH');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>店家上架申請（3 分鐘）— TaiwanSaver</title>
+<meta name="description" content="填 8 個小問題，TaiwanSaver 自動幫你做中英雙語折扣頁並上線，把外國自由行旅客帶到你店裡。免費上架。">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://taiwansaver.com/join/">
+<meta name="theme-color" content="#225378">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+  .quiz{max-width:620px;margin:0 auto;padding:8px 20px 80px}
+  .qtop{display:flex;justify-content:space-between;align-items:center;color:var(--soft);font-size:14px;margin:10px 0 6px}
+  .qbar{height:4px;background:var(--rule);border-radius:99px;overflow:hidden;margin-bottom:28px}
+  .qbar i{display:block;height:100%;background:var(--red);border-radius:99px;transition:width .25s}
+  .qback{color:var(--soft);text-decoration:none;font-size:15px;display:inline-block;margin-bottom:14px;cursor:pointer}
+  .qback:hover{color:var(--navy)}
+  .qh{font-size:clamp(24px,5.5vw,32px);color:var(--navy);margin:0 0 8px;line-height:1.2}
+  .qsub{color:var(--soft);margin:0 0 22px;font-size:16px}
+  .qcard{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;
+    background:#fff;border:1px solid var(--rule);border-radius:14px;padding:18px 20px;margin:0 0 12px;
+    cursor:pointer;font:inherit;transition:border-color .12s, box-shadow .12s}
+  .qcard:hover,.qcard:focus-visible{border-color:var(--red);box-shadow:0 2px 12px rgba(0,0,0,.06);outline:none}
+  .qcard b{display:block;font-size:17px;color:var(--ink)}
+  .qcard small{display:block;color:var(--soft);font-size:14px;margin-top:2px}
+  .qcard .arr{color:var(--red);font-weight:800;flex:none}
+  .qin{width:100%;font:inherit;font-size:18px;padding:15px 16px;border:1.5px solid var(--rule);border-radius:12px;
+    box-sizing:border-box;background:#fff;color:var(--ink)}
+  .qin:focus{border-color:var(--red);outline:none}
+  textarea.qin{min-height:96px;resize:vertical}
+  .qhint{font-size:13.5px;color:var(--soft);margin:8px 2px 0;line-height:1.55}
+  .qnext{display:inline-block;background:var(--red);color:#fff;border:none;font:inherit;font-weight:700;font-size:16px;
+    padding:14px 30px;border-radius:10px;cursor:pointer;margin-top:18px}
+  .qnext:hover{background:#DB6F00}
+  .qnext:disabled{opacity:.4;cursor:not-allowed}
+  .qskip{margin-left:14px;color:var(--soft);font-size:15px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;background:none;border:none;font-family:inherit}
+  .qerr{color:#C62828;font-size:14px;margin-top:8px;display:none}
+  .rrow{display:flex;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--rule);
+    border-radius:12px;padding:13px 16px;margin-bottom:10px;font-size:15px}
+  .rrow b{color:var(--navy);flex:none}
+  .rrow span{text-align:right;word-break:break-all}
+  .rrow a{font-size:13.5px;flex:none;align-self:center}
+  .done{ text-align:center;padding:40px 0}
+  .done .big{font-size:54px;margin-bottom:10px}
+  .lbl{display:block;font-weight:700;color:var(--navy);font-size:15px;margin:16px 0 6px}
+  .spin{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="brand" href="../">Taiwan<b>Saver</b></a>
+  <nav class="nav"><a href="../for-business/">店家合作</a></nav>
+</div>
+
+<main class="quiz" id="quiz">
+  <div class="qtop"><span>店家上架申請 Merchant Listing</span><span id="stepnum">步驟 1 / 8</span></div>
+  <div class="qbar"><i id="bar" style="width:12%"></i></div>
+  <div id="screen"></div>
+</main>
+
+<footer class="center"><p>TaiwanSaver · 真程旅行社 Topology Travel · <a href="mailto:peter@topologytravel.com">peter@topologytravel.com</a></p></footer>
+
+<script>
+(function(){
+var ENDPOINT = "https://script.google.com/macros/s/AKfycbz9G3R54sf9thTbbxH89siM1jBKtZ08KOsOJRhn4FEfOLafW8R5UEb5U5_MEnrXDJzy/exec"; // Apps Script Web App URL
+var TOTAL = 8;
+var state = { category:"", name:"", discount:"", address:"", phone:"", photos:"", ig:"",
+              contactName:"", contactEmail:"", contactMobile:"", social:"", website:"" };
+var screen = document.getElementById('screen');
+var stack = [];
+
+function esc(x){return String(x||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function setProgress(n){
+  document.getElementById('stepnum').textContent = n<=TOTAL ? ('步驟 '+n+' / '+TOTAL) : '完成';
+  document.getElementById('bar').style.width = Math.min(100, Math.round(n/TOTAL*100))+'%';
+}
+function show(html, n){ screen.innerHTML = html; setProgress(n); window.scrollTo({top:0,behavior:'smooth'});
+  var inp = screen.querySelector('.qin'); if(inp){ try{ inp.focus({preventScroll:true}); }catch(e){} } }
+function back(){ var prev = stack.pop(); if(prev) prev(); }
+function backLink(){ return stack.length ? '<a class="qback" id="bk">← 上一步</a>' : ''; }
+function bindBack(){ var b=document.getElementById('bk'); if(b) b.onclick=back; }
+function err(msg){ var e=document.getElementById('err'); e.textContent=msg; e.style.display='block'; }
+
+/* enter-to-continue for single inputs */
+function bindEnter(fn){ screen.querySelectorAll('.qin').forEach(function(i){
+  if(i.tagName==='TEXTAREA') return;
+  i.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); fn(); } });
+});}
+
+/* ── Step 1 店家類型 ───────────────────────── */
+function step1(){
+  show(backLink()+
+  '<h1 class="qh">你的店是哪一種？</h1><p class="qsub">選一個最接近的。What kind of business?</p>'+
+  [['🍸','酒吧 Bar','調酒、精釀、居酒屋'],
+   ['🍽️','餐廳 Restaurant','正餐、小吃、甜點'],
+   ['☕','咖啡 Cafe','咖啡廳、茶飲'],
+   ['🚗','旅遊・交通 Tour & Transport','行程、租車、票券、eSIM'],
+   ['✨','其他 Other','按摩、體驗、零售⋯']].map(function(o){
+    return '<button class="qcard" data-v="'+esc(o[1])+'"><span><b>'+o[0]+' '+esc(o[1])+'</b><small>'+esc(o[2])+'</small></span><span class="arr">→</span></button>';
+  }).join(''), 1);
+  bindBack();
+  screen.querySelectorAll('.qcard').forEach(function(c){
+    c.onclick=function(){ state.category=c.getAttribute('data-v'); stack.push(step1); step2(); };
+  });
+}
+
+/* ── Step 2 店名 ───────────────────────────── */
+function step2(){
+  show(backLink()+
+  '<h1 class="qh">店名是？</h1><p class="qsub">會直接顯示在折扣頁標題。Store name.</p>'+
+  '<input class="qin" id="f" value="'+esc(state.name)+'" placeholder="例：湧金啤酒 Yongjin Beer">'+
+  '<p class="qerr" id="err"></p><button class="qnext" id="go">下一步 →</button>', 2);
+  bindBack();
+  var go=function(){ var v=document.getElementById('f').value.trim();
+    if(!v) return err('請填店名'); state.name=v; stack.push(step2); step3(); };
+  document.getElementById('go').onclick=go; bindEnter(go);
+}
+
+/* ── Step 3 折扣（快選卡＋自訂） ─────────────── */
+function step3(){
+  show(backLink()+
+  '<h1 class="qh">客人出示 DM，可以享什麼？</h1><p class="qsub">點一個常見折扣，或自己輸入。Discount offered.</p>'+
+  [['整單 9 折','最受旅客歡迎的選項'],
+   ['整單 95 折','小折扣也有效果'],
+   ['免費迎賓飲料 Welcome Drink','一杯小飲料，旅客超有感'],
+   ['第二杯／第二份半價','適合兩人同行'],
+   ['免費小點心或加購禮','自由發揮的小驚喜']].map(function(o){
+    return '<button class="qcard" data-v="'+esc(o[0])+'"><span><b>'+esc(o[0])+'</b><small>'+esc(o[1])+'</small></span><span class="arr">→</span></button>';
+  }).join('')+
+  '<label class="lbl">或自訂折扣內容：</label>'+
+  '<input class="qin" id="f" value="'+esc(state.discount)+'" placeholder="例：平日來店送限定小菜一份">'+
+  '<p class="qerr" id="err"></p><button class="qnext" id="go">用自訂內容，下一步 →</button>', 3);
+  bindBack();
+  screen.querySelectorAll('.qcard').forEach(function(c){
+    c.onclick=function(){ state.discount=c.getAttribute('data-v'); stack.push(step3); step4(); };
+  });
+  var go=function(){ var v=document.getElementById('f').value.trim();
+    if(!v) return err('請點選上面的快選，或自己輸入折扣內容'); state.discount=v; stack.push(step3); step4(); };
+  document.getElementById('go').onclick=go; bindEnter(go);
+}
+
+/* ── Step 4 地址 ───────────────────────────── */
+function step4(){
+  show(backLink()+
+  '<h1 class="qh">店的完整地址？</h1><p class="qsub">會用來放上地圖和導航。Address（線上服務可填官網網址）.</p>'+
+  '<input class="qin" id="f" value="'+esc(state.address)+'" placeholder="例：台北市信義區松仁路18號">'+
+  '<p class="qerr" id="err"></p><button class="qnext" id="go">下一步 →</button>', 4);
+  bindBack();
+  var go=function(){ var v=document.getElementById('f').value.trim();
+    if(!v) return err('請填地址（或線上服務的網址）'); state.address=v; stack.push(step4); step5(); };
+  document.getElementById('go').onclick=go; bindEnter(go);
+}
+
+/* ── Step 5 店家電話 ────────────────────────── */
+function step5(){
+  show(backLink()+
+  '<h1 class="qh">店的聯絡電話？</h1><p class="qsub">顯示在折扣頁，方便旅客聯絡。Contact phone.</p>'+
+  '<input class="qin" id="f" type="tel" value="'+esc(state.phone)+'" placeholder="例：02-2345-6789">'+
+  '<p class="qerr" id="err"></p><button class="qnext" id="go">下一步 →</button>', 5);
+  bindBack();
+  var go=function(){ var v=document.getElementById('f').value.trim();
+    if(!v) return err('請填電話'); state.phone=v; stack.push(step5); step6(); };
+  document.getElementById('go').onclick=go; bindEnter(go);
+}
+
+/* ── Step 6 照片連結 ────────────────────────── */
+function step6(){
+  show(backLink()+
+  '<h1 class="qh">店家照片的分享連結</h1><p class="qsub">我們用照片幫你做 DM 和頁面。Photo link.</p>'+
+  '<input class="qin" id="f" value="'+esc(state.photos)+'" placeholder="Google Drive / Dropbox 分享連結">'+
+  '<p class="qhint">把照片放進 Google Drive 或 Dropbox，開「知道連結的人可檢視」後把連結貼上來。建議 3–6 張：①店面／環境 ②招牌餐點或飲品 ③Logo（去背 PNG 佳），單張至少 1600px。</p>'+
+  '<p class="qerr" id="err"></p><button class="qnext" id="go">下一步 →</button>', 6);
+  bindBack();
+  var go=function(){ var v=document.getElementById('f').value.trim();
+    if(!v) return err('請貼照片連結（沒有照片頁面會很空喔）');
+    state.photos=v; stack.push(step6); step7(); };
+  document.getElementById('go').onclick=go; bindEnter(go);
+}
+
+/* ── Step 7 IG/FB（選填） ───────────────────── */
+function step7(){
+  show(backLink()+
+  '<h1 class="qh">IG 或 Facebook 連結？</h1><p class="qsub">選填——方便我們做行銷素材。Social link (optional).</p>'+
+  '<input class="qin" id="f" value="'+esc(state.ig)+'" placeholder="https://instagram.com/yourshop">'+
+  '<button class="qnext" id="go">下一步 →</button><button class="qskip" id="skip">略過</button>', 7);
+  bindBack();
+  var go=function(){ state.ig=document.getElementById('f').value.trim(); stack.push(step7); step8(); };
+  document.getElementById('go').onclick=go;
+  document.getElementById('skip').onclick=function(){ state.ig=''; stack.push(step7); step8(); };
+  bindEnter(go);
+}
+
+/* ── Step 8 聯絡窗口 ───────────────────────── */
+function step8(){
+  show(backLink()+
+  '<h1 class="qh">最後，你的聯絡方式</h1><p class="qsub">上線通知和後續聯繫用，不會公開。Contact info.</p>'+
+  '<label class="lbl">聯絡人姓名 *</label><input class="qin" id="cn" value="'+esc(state.contactName)+'" placeholder="例：陳小明">'+
+  '<label class="lbl">Email *（上線通知寄到這裡）</label><input class="qin" id="ce" type="email" value="'+esc(state.contactEmail)+'" placeholder="you@example.com">'+
+  '<label class="lbl">手機（選填）</label><input class="qin" id="cm" type="tel" value="'+esc(state.contactMobile)+'" placeholder="09xx-xxx-xxx">'+
+  '<label class="lbl">LINE ID／其他社群（選填）</label><input class="qin" id="cs" value="'+esc(state.social)+'" placeholder="LINE ID">'+
+  '<input type="text" id="hp" name="website" value="" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">'+
+  '<p class="qerr" id="err"></p><button class="qnext" id="go">看一眼確認 →</button>', 8);
+  bindBack();
+  var go=function(){
+    var cn=document.getElementById('cn').value.trim(), ce=document.getElementById('ce').value.trim();
+    if(!cn) return err('請填聯絡人姓名');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ce)) return err('Email 格式怪怪的，再檢查一下');
+    state.contactName=cn; state.contactEmail=ce;
+    state.contactMobile=document.getElementById('cm').value.trim();
+    state.social=document.getElementById('cs').value.trim();
+    state.website=document.getElementById('hp').value;
+    stack.push(step8); review();
+  };
+  document.getElementById('go').onclick=go; bindEnter(go);
+}
+
+/* ── 確認頁 ─────────────────────────────────── */
+function review(){
+  function row(label,val){ return val?'<div class="rrow"><b>'+label+'</b><span>'+esc(val)+'</span></div>':''; }
+  show(backLink()+
+  '<h1 class="qh">確認一下，沒問題就送出</h1><p class="qsub">送出後幾分鐘內，你的中英雙語折扣頁就會自動上線。</p>'+
+  row('類型',state.category)+row('店名',state.name)+row('折扣',state.discount)+
+  row('地址',state.address)+row('電話',state.phone)+row('照片',state.photos)+
+  row('IG/FB',state.ig)+row('聯絡人',state.contactName)+row('Email',state.contactEmail)+
+  row('手機',state.contactMobile)+row('LINE',state.social)+
+  '<p class="qhint">新增上架免費；之後首次修改免費，第 2 次修改起每次 NT$300。</p>'+
+  '<p class="qerr" id="err"></p>'+
+  '<button class="qnext" id="go">免費上架 🚀</button>', 8);
+  bindBack();
+  document.getElementById('go').onclick=function(){
+    var btn=this; btn.disabled=true; btn.innerHTML='<span class="spin"></span>上架中，約 10 秒…';
+    var body=new URLSearchParams();
+    Object.keys(state).forEach(function(k){ body.append(k,state[k]); });
+    gtag('event','merchant_form_submit',{category:state.category});
+    fetch(ENDPOINT,{method:'POST',body:body}).then(function(r){return r.json();}).then(function(res){
+      if(res && res.ok){ done(res.url); }
+      else { throw new Error(res && res.error || 'unknown'); }
+    }).catch(function(e){
+      btn.disabled=false; btn.textContent='免費上架 🚀';
+      err('送出失敗了，請再試一次；持續失敗請直接寄信給 peter@topologytravel.com');
+    });
+  };
+}
+
+/* ── 完成頁 ─────────────────────────────────── */
+function done(url){
+  stack=[];
+  show('<div class="done"><div class="big">🎉</div>'+
+  '<h1 class="qh">上架完成！</h1>'+
+  '<p class="qsub">你的中英雙語折扣頁已自動產生，約 1 分鐘後全球可見。確認信已寄到 '+esc(state.contactEmail)+'。</p>'+
+  (url?'<p><a class="qnext" style="text-decoration:none" href="'+esc(url)+'">看我的折扣頁 →</a></p>':'')+
+  '<p class="qhint">頁面同時會出現在 TaiwanSaver 的折扣列表和地圖上。資料想修改？回信給我們就可以。</p></div>', 9);
+}
+
+step1();
+})();
+</script>
+</body>
+</html>
