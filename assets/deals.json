@@ -86,20 +86,6 @@
       "added": "2026-06-10"
     },
     {
-      "slug": "demo-verify-diner",
-      "name": "Demo Verify Diner",
-      "tagEN": "🍽️ Restaurant · Taipei",
-      "tagZH": "🍽️ 餐廳 Restaurant · 台北",
-      "dealEN": "10% off the entire order",
-      "dealZH": "整單 9 折",
-      "descEN": "Demo Verify Diner — show the TaiwanSaver flyer at the counter to redeem.",
-      "descZH": "Demo Verify Diner — 到店出示 TaiwanSaver 電子 DM 即可兌換。",
-      "lat": 25.042178,
-      "lng": 121.544965,
-      "gmaps": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B8%82%E5%A4%A7%E5%AE%89%E5%8D%80%E5%BF%A0%E5%AD%9D%E6%9D%B1%E8%B7%AF%E5%9B%9B%E6%AE%B545%E8%99%9F",
-      "added": "2026-06-11"
-    },
-    {
       "slug": "store-749845811",
       "name": "台灣好餐廳",
       "tagEN": "🍽️ Restaurant · Taipei",
