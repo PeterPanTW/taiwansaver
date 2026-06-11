@@ -118,13 +118,35 @@
 </main>
 
 <script>
-/* Shuffle the deal cards so each visit shows a slightly different order.
-   Cards stay in the static HTML (crawlable by Google/AI); only display order changes. */
+/* ① Append any deals from assets/deals.json that aren't already in the static HTML
+   (new merchants published by the form go live here automatically).
+   ② Shuffle display order. Static cards stay in the HTML for SEO. */
 (function(){
   var g=document.getElementById('deal-grid'); if(!g) return;
-  var cards=Array.prototype.slice.call(g.querySelectorAll('.card'));
-  for(var i=cards.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=cards[i];cards[i]=cards[j];cards[j]=t;}
-  cards.forEach(function(c){g.appendChild(c);});
+  function esc(x){return String(x||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function shuffle(){
+    var cards=Array.prototype.slice.call(g.querySelectorAll('.card'));
+    for(var i=cards.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=cards[i];cards[i]=cards[j];cards[j]=t;}
+    cards.forEach(function(c){g.appendChild(c);});
+  }
+  fetch('../assets/deals.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(data){
+    var have={};
+    g.querySelectorAll('a.card').forEach(function(a){
+      var m=(a.getAttribute('href')||'').match(/deals\/([^\/]+)/); if(m) have[m[1]]=1;
+    });
+    (data.deals||[]).forEach(function(d){
+      if(have[d.slug]) return;
+      var a=document.createElement('a');
+      a.className='card'; a.href='../deals/'+d.slug+'/';
+      a.innerHTML=
+        '<p class="tag" data-en="'+esc(d.tagEN)+'" data-zh="'+esc(d.tagZH)+'">'+esc(d.tagEN)+'</p>'+
+        '<p class="deal" data-en="'+esc(d.dealEN)+'" data-zh="'+esc(d.dealZH)+'">'+esc(d.dealEN)+'</p>'+
+        '<p data-en="'+esc(d.descEN)+'" data-zh="'+esc(d.descZH)+'">'+esc(d.descEN)+'</p>'+
+        '<span class="go" style="color:var(--red);font-weight:700" data-en="View deal →" data-zh="看優惠 →">View deal →</span>';
+      g.appendChild(a);
+    });
+    if(window.TSLang) window.TSLang.set(window.TSLang.get()); // re-apply language to new cards
+  }).catch(function(){}).then(shuffle);
 })();
 </script>
 
