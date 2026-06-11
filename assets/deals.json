@@ -84,20 +84,6 @@
       "lng": null,
       "gmaps": "",
       "added": "2026-06-10"
-    },
-    {
-      "slug": "store-749845811",
-      "name": "台灣好餐廳",
-      "tagEN": "🍽️ Restaurant · Taipei",
-      "tagZH": "🍽️ 餐廳 Restaurant · 台北",
-      "dealEN": "10% off the entire order",
-      "dealZH": "整單 9 折",
-      "descEN": "台灣好餐廳 — show the TaiwanSaver flyer at the counter to redeem.",
-      "descZH": "台灣好餐廳 — 到店出示 TaiwanSaver 電子 DM 即可兌換。",
-      "lat": null,
-      "lng": null,
-      "gmaps": "",
-      "added": "2026-06-11"
     }
   ]
 }
