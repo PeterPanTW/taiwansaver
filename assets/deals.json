@@ -84,6 +84,20 @@
       "lng": null,
       "gmaps": "",
       "added": "2026-06-10"
+    },
+    {
+      "slug": "final-check-bistro",
+      "name": "Final Check Bistro",
+      "tagEN": "🍽️ Restaurant · Taipei",
+      "tagZH": "🍽️ 餐廳 Restaurant · 台北",
+      "dealEN": "10% off the entire order",
+      "dealZH": "整單 9 折",
+      "descEN": "Final Check Bistro — show the TaiwanSaver flyer at the counter to redeem.",
+      "descZH": "Final Check Bistro — 到店出示 TaiwanSaver 電子 DM 即可兌換。",
+      "lat": 25.051827,
+      "lng": 121.531864,
+      "gmaps": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B8%82%E4%B8%AD%E5%B1%B1%E5%8D%80%E5%8D%97%E4%BA%AC%E6%9D%B1%E8%B7%AF%E4%BA%8C%E6%AE%B5100%E8%99%9F",
+      "added": "2026-06-12"
     }
   ]
 }
