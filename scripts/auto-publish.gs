@@ -110,7 +110,7 @@ function publishStore_(d, opts) {
 
   var c = bumpCount_(d.name, slug, url, existed);
   var emailMsg = '';
-  try { emailMsg = notify_(d, url, c); } catch (e3) { emailMsg = '寄信失敗：' + e3; }
+  try { emailMsg = notifyQueue_(d, url, c); } catch (e3) { emailMsg = '排程寄信失敗：' + e3; }
 
   try { updateDealsJson_(slug, d, url); } catch (e4) { log_('WARN', d.name, 'deals.json 更新失敗：' + e4, url); }
   try { updateSitemap_(slug); }           catch (e5) { log_('WARN', d.name, 'sitemap 更新失敗：' + e5, url); }
@@ -229,6 +229,38 @@ function bumpCount_(name, slug, url, existed) {
   var total = 0; var dd = sh.getDataRange().getValues();
   for (var j = 1; j < dd.length; j++) total += Number(dd[j][3]) || 0;
   return { publishes: publishes, edits: edits, billable: billable, fee: billable * FEE_PER_EDIT, platformTotalEdits: total };
+}
+
+/** ── 延遲通知：等 GitHub Pages 建置完成（頁面回 200）才寄信 ──
+ * publishStore_ 不直接寄信，而是排入佇列＋建立 70 秒後的一次性觸發器。
+ * processNotifyQueue 確認頁面已上線才寄；還沒好就再等 60 秒（最多 5 輪後強制寄出）。 */
+function notifyQueue_(d, url, c) {
+  var props = PropertiesService.getScriptProperties();
+  var q = JSON.parse(props.getProperty('NOTIFY_QUEUE') || '[]');
+  q.push({ d: { name: d.name, submitterEmail: d.submitterEmail || '', contactEmail: d.contactEmail || '',
+                contactMobile: d.contactMobile || '', social: d.social || '' }, url: url, c: c, tries: 0 });
+  props.setProperty('NOTIFY_QUEUE', JSON.stringify(q));
+  ScriptApp.newTrigger('processNotifyQueue').timeBased().after(70 * 1000).create();
+  return '通知已排程（頁面上線後寄出）';
+}
+
+function processNotifyQueue() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'processNotifyQueue') ScriptApp.deleteTrigger(t);
+  });
+  var props = PropertiesService.getScriptProperties();
+  var q = JSON.parse(props.getProperty('NOTIFY_QUEUE') || '[]');
+  var keep = [];
+  q.forEach(function (item) {
+    var live = false;
+    try { live = UrlFetchApp.fetch(item.url, { muteHttpExceptions: true }).getResponseCode() === 200; } catch (e) {}
+    if (live || item.tries >= 4) {
+      try { var msg = notify_(item.d, item.url, item.c); log_('NOTIFY', item.d.name, msg + (live ? '（頁面已確認上線）' : '（建置逾時，仍寄出）'), item.url); }
+      catch (e2) { log_('WARN', item.d.name, '延遲寄信失敗：' + e2, item.url); }
+    } else { item.tries++; keep.push(item); }
+  });
+  props.setProperty('NOTIFY_QUEUE', JSON.stringify(keep));
+  if (keep.length) ScriptApp.newTrigger('processNotifyQueue').timeBased().after(60 * 1000).create();
 }
 
 /** 寄信給 Peter + 填表人，含 3 連結與修改總次數 */
