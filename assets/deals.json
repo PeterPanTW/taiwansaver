@@ -84,20 +84,6 @@
       "lng": null,
       "gmaps": "",
       "added": "2026-06-10"
-    },
-    {
-      "slug": "locomotive",
-      "name": "機車",
-      "tagEN": "🚗 Tour & Transport · Taipei",
-      "tagZH": "🚗 旅遊・交通 Tour & Transport · 台北",
-      "dealEN": "Complimentary welcome drink",
-      "dealZH": "免費迎賓飲料 Welcome Drink",
-      "descEN": "機車 — show the TaiwanSaver flyer at the counter to redeem.",
-      "descZH": "機車 — 到店出示 TaiwanSaver 電子 DM 即可兌換。",
-      "lat": null,
-      "lng": null,
-      "gmaps": "",
-      "added": "2026-06-12"
     }
   ]
 }
