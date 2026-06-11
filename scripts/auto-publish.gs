@@ -46,30 +46,157 @@ function onNewSubmission(e) {
       contactMobile: pick('聯絡人電話'), social: pick('LINE')
     };
 
-    var slug = slugify_(name);
-    var path = (AUTO_PUBLISH ? 'deals' : 'drafts') + '/' + slug + '/index.html';
-    var existed = githubPut_(path, buildDealHtml_(slug, d), 'Auto: ' + name + ' (from form)');
-    var url = 'https://taiwansaver.com/deals/' + slug + '/';
-
-    // ① 寫回資料清單該列
-    try { writeUrlToRow_(e, url); } catch (err2) { log_('WARN', name, '寫回網址失敗：' + err2, url); }
-
-    // ③ 更新修改次數累積表（existed=true 表示這是「修改」，否則是「新增」）
-    var c = bumpCount_(name, slug, url, existed);
-
-    // ④ 寄信給 Peter + 填表人
-    var emailMsg = '';
-    try { emailMsg = notify_(d, url, c); } catch (err3) { emailMsg = '寄信失敗：' + err3; }
-
-    // ② 記錄修改歷程
-    log_(existed ? 'UPDATE' : 'PUBLISH', name,
-      (existed ? '已更新 ' : '已新增 ') + path
-      + ' | 累積發佈 ' + c.publishes + ' 次（修改 ' + c.edits + '、計費 ' + c.billable + '）'
-      + ' | 窗口 ' + (d.contactName || '-') + ' ' + (d.contactEmail || d.contactMobile || d.social || '')
-      + ' | ' + emailMsg, url);
+    publishStore_(d, { event: e, source: 'gform' });
   } catch (err) {
     log_('ERROR', name, String(err).substring(0, 300), '');
   }
+}
+
+
+/** ── 自家表單（taiwansaver.com/join/）入口 ──
+ * 部署：Apps Script 編輯器 → 部署 → 新增部署 → 網頁應用程式
+ *      執行身分=我、誰可以存取=所有人 → 取得 /exec 網址貼進 join/index.html 的 ENDPOINT。
+ */
+function doPost(e) {
+  var p = (e && e.parameter) || {};
+  var out = { ok: false };
+  try {
+    if (p.website) { out.ok = true; return json_(out); }          // 蜜罐：機器人填了就默默丟掉
+    var d = {
+      name: String(p.name || '').trim(), hours: '', phone: String(p.phone || '').trim(),
+      address: String(p.address || '').trim(), discount: String(p.discount || '').trim(),
+      category: String(p.category || '').trim(), ig: String(p.ig || '').trim(),
+      photos: String(p.photos || '').trim(), contactName: String(p.contactName || '').trim(),
+      contactEmail: String(p.contactEmail || '').trim(), submitterEmail: String(p.contactEmail || '').trim(),
+      contactMobile: String(p.contactMobile || '').trim(), social: String(p.social || '').trim()
+    };
+    if (!d.name || !d.discount || !d.address) { out.error = '缺必填欄位'; return json_(out); }
+    if (/test|測試/i.test(d.name)) { log_('SKIP', d.name, '疑似測試（join 表單），略過', ''); out.error = '測試店名不上線'; return json_(out); }
+    var row = appendToSheet_(d);                                   // 寫進「表單回覆 1」＝資料庫
+    var r = publishStore_(d, { sheetRow: row, source: 'join' });
+    out.ok = true; out.url = r.url;
+  } catch (err) {
+    log_('ERROR', p.name || '', 'doPost：' + String(err).substring(0, 300), '');
+    out.error = String(err).substring(0, 200);
+  }
+  return json_(out);
+}
+function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+
+/** 把自家表單的資料寫進「表單回覆 1」，欄位用表頭關鍵字對應（與 Google 表單共用同一張表）。回傳列號 */
+function appendToSheet_(d) {
+  var sh = SpreadsheetApp.getActive().getSheetByName('表單回覆 1');
+  var H = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  var row = new Array(H.length).fill('');
+  function put(kw, v) { for (var i = 0; i < H.length; i++) { if (String(H[i]).indexOf(kw) !== -1) { row[i] = v; return; } } }
+  put('時間戳記', new Date()); put('店名', d.name); put('聯絡電話', d.phone); put('Address', d.address);
+  put('折扣', d.discount); put('類型', d.category); put('IG', d.ig); put('照片', d.photos);
+  put('聯絡人姓名', d.contactName); put('聯絡人 Email', d.contactEmail); put('電子郵件地址', d.contactEmail);
+  put('聯絡人電話', d.contactMobile); put('LINE', d.social);
+  sh.appendRow(row);
+  return sh.getLastRow();
+}
+
+/** ── 共用發佈核心：產頁→寫回網址→計次→寄信→deals.json→sitemap→log ── */
+function publishStore_(d, opts) {
+  opts = opts || {};
+  var slug = slugify_(d.name);
+  var path = (AUTO_PUBLISH ? 'deals' : 'drafts') + '/' + slug + '/index.html';
+  var existed = githubPut_(path, buildDealHtml_(slug, d), 'Auto: ' + d.name + ' (from form)');
+  var url = 'https://taiwansaver.com/deals/' + slug + '/';
+
+  if (opts.sheetRow) { try { writeUrlToRowNum_(opts.sheetRow, url); } catch (e1) { log_('WARN', d.name, '寫回網址失敗：' + e1, url); } }
+  if (opts.event)    { try { writeUrlToRow_(opts.event, url); }      catch (e2) { log_('WARN', d.name, '寫回網址失敗：' + e2, url); } }
+
+  var c = bumpCount_(d.name, slug, url, existed);
+  var emailMsg = '';
+  try { emailMsg = notify_(d, url, c); } catch (e3) { emailMsg = '寄信失敗：' + e3; }
+
+  try { updateDealsJson_(slug, d, url); } catch (e4) { log_('WARN', d.name, 'deals.json 更新失敗：' + e4, url); }
+  try { updateSitemap_(slug); }           catch (e5) { log_('WARN', d.name, 'sitemap 更新失敗：' + e5, url); }
+
+  log_(existed ? 'UPDATE' : 'PUBLISH', d.name,
+    (existed ? '已更新 ' : '已新增 ') + path
+    + ' | 累積發佈 ' + c.publishes + ' 次（修改 ' + c.edits + '、計費 ' + c.billable + '）'
+    + ' | 窗口 ' + (d.contactName || '-') + ' ' + (d.contactEmail || d.contactMobile || d.social || '')
+    + ' | ' + emailMsg, url);
+  return { url: url, existed: existed, c: c };
+}
+
+function writeUrlToRowNum_(rowNum, url) {
+  var sh = SpreadsheetApp.getActive().getSheetByName('表單回覆 1');
+  var lastCol = sh.getLastColumn();
+  var headers = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+  var col = headers.indexOf(URL_COL_HEADER) + 1;
+  if (col === 0) { col = lastCol + 1; sh.getRange(1, col).setValue(URL_COL_HEADER); }
+  sh.getRange(rowNum, col).setValue(url);
+}
+
+/** 地址→經緯度（Apps Script 內建 geocoder，限台灣範圍） */
+function geocode_(address) {
+  if (!address || /^https?:/i.test(address)) return null;         // 線上服務（填網址）不定位
+  try {
+    var res = Maps.newGeocoder().setRegion('tw').geocode(address);
+    if (res.status === 'OK' && res.results.length) {
+      var l = res.results[0].geometry.location;
+      return { lat: Math.round(l.lat * 1e6) / 1e6, lng: Math.round(l.lng * 1e6) / 1e6 };
+    }
+  } catch (e) {}
+  return null;
+}
+
+var CAT_EMOJI = { '酒吧': '🍸', '餐廳': '🍽️', '咖啡': '☕', '旅遊': '🚗', '其他': '✨' };
+function catEmoji_(cat) { for (var k in CAT_EMOJI) { if (cat && cat.indexOf(k) !== -1) return CAT_EMOJI[k]; } return '⭐'; }
+
+/** 把店家 upsert 進 assets/deals.json（travelers 列表與地圖會自動長出新卡片/marker） */
+function updateDealsJson_(slug, d, url) {
+  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  var api = 'https://api.github.com/repos/' + REPO + '/contents/assets/deals.json';
+  var headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  var g = UrlFetchApp.fetch(api + '?ref=' + BRANCH, { headers: headers, muteHttpExceptions: true });
+  if (g.getResponseCode() !== 200) throw new Error('讀 deals.json 失敗 ' + g.getResponseCode());
+  var meta = JSON.parse(g.getContentText());
+  var data = JSON.parse(Utilities.newBlob(Utilities.base64Decode(meta.content.replace(/\n/g, ''))).getDataAsString('UTF-8'));
+
+  function tr(t, tgt) { if (!t) return ''; try { return LanguageApp.translate(t, '', tgt); } catch (e) { return t; } }
+  var emoji = catEmoji_(d.category);
+  var ll = geocode_(d.address);
+  var entry = {
+    slug: slug, name: d.name,
+    tagEN: emoji + ' ' + (tr(d.category, 'en') || 'Local deal') + ' · Taipei',
+    tagZH: emoji + ' ' + (d.category || '在地優惠') + ' · 台北',
+    dealEN: tr(d.discount, 'en'), dealZH: tr(d.discount, 'zh-TW'),
+    descEN: d.name + ' — show the TaiwanSaver flyer at the counter to redeem.',
+    descZH: d.name + ' — 到店出示 TaiwanSaver 電子 DM 即可兌換。',
+    lat: ll ? ll.lat : null, lng: ll ? ll.lng : null,
+    gmaps: ll ? ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(d.address)) : '',
+    added: Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd')
+  };
+  var found = false;
+  for (var i = 0; i < data.deals.length; i++) { if (data.deals[i].slug === slug) { data.deals[i] = entry; found = true; break; } }
+  if (!found) data.deals.push(entry);
+  data.updated = entry.added;
+  githubPut_('assets/deals.json', JSON.stringify(data, null, 2) + '\n', 'Auto: deals.json — ' + d.name);
+}
+
+/** 把新 deal 頁加進 sitemap.xml（已存在則更新 lastmod） */
+function updateSitemap_(slug) {
+  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  var api = 'https://api.github.com/repos/' + REPO + '/contents/sitemap.xml';
+  var headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  var g = UrlFetchApp.fetch(api + '?ref=' + BRANCH, { headers: headers, muteHttpExceptions: true });
+  if (g.getResponseCode() !== 200) throw new Error('讀 sitemap 失敗 ' + g.getResponseCode());
+  var meta = JSON.parse(g.getContentText());
+  var xml = Utilities.newBlob(Utilities.base64Decode(meta.content.replace(/\n/g, ''))).getDataAsString('UTF-8');
+  var loc = 'https://taiwansaver.com/deals/' + slug + '/';
+  var today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
+  if (xml.indexOf('<loc>' + loc + '</loc>') !== -1) {
+    var re = new RegExp('(<url><loc>' + loc.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&') + '</loc><lastmod>)[0-9-]+(</lastmod>)');
+    xml = xml.replace(re, '$1' + today + '$2');
+  } else {
+    xml = xml.replace('</urlset>', '  <url><loc>' + loc + '</loc><lastmod>' + today + '</lastmod><priority>0.9</priority></url>\n</urlset>');
+  }
+  githubPut_('sitemap.xml', xml, 'Auto: sitemap — ' + slug);
 }
 
 /** 把上線網址寫回「資料清單(表單回覆)」剛送出的那一列（新增欄位「已發佈網址」） */
@@ -210,8 +337,8 @@ function buildDealHtml_(slug, d) {
   var hoursEN = tr(d.hours, 'en'), hoursZH = tr(d.hours, 'zh-TW');
   var catEN = d.category || 'Local deal', catZH = d.category || '在地優惠';
   var ph = d.phone ? ' · ☎ ' + d.phone : '';
-  var sumEN = d.name + ' offers travelers ' + discEN + '. Show the TaiwanSaver flyer at the counter to redeem. ' + hoursEN + ' Address: ' + d.address + '.';
-  var sumZH = d.name + '：出示 TaiwanSaver 電子 DM 即可享「' + discZH + '」。' + hoursZH + '。地址：' + d.address + '。';
+  var sumEN = d.name + ' offers travelers ' + discEN + '. Show the TaiwanSaver flyer at the counter to redeem.' + (hoursEN ? ' ' + hoursEN : '') + ' Address: ' + d.address + '.';
+  var sumZH = d.name + '：出示 TaiwanSaver 電子 DM 即可享「' + discZH + '」。' + (hoursZH ? hoursZH + '。' : '') + '地址：' + d.address + '。';
   var jsonld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: d.name, description: d.name + ' — ' + discEN + '. Show the TaiwanSaver flyer to redeem.', address: { '@type': 'PostalAddress', streetAddress: d.address, addressRegion: 'Taipei', addressCountry: 'TW' }, telephone: d.phone, url: 'https://taiwansaver.com/deals/' + slug + '/', makesOffer: { '@type': 'Offer', name: discEN } };
   return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
 '<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
@@ -230,7 +357,7 @@ bi('p', 'class="deal" style="font-size:22px;color:var(--red);font-weight:800"', 
 bi('p', 'class="summary"', sumEN, sumZH) + '\n' +
 bi('h2', '', 'What is the discount?', '有什麼折扣？') + bi('p', '', discEN + ' — show the flyer at the counter, no booking needed.', discZH + ' — 到店出示電子 DM 即可，免預約。') + '\n' +
 bi('h2', '', 'Where is it?', '在哪裡？') + bi('p', '', d.address + ph, d.address + ph) + '\n' +
-bi('h2', '', 'What are the opening hours?', '營業時間？') + bi('p', '', hoursEN, hoursZH) + '\n' +
+(d.hours ? bi('h2', '', 'What are the opening hours?', '營業時間？') + bi('p', '', hoursEN, hoursZH) + '\n' : '') +
 bi('h2', '', 'How do I redeem it?', '怎麼兌換？') + '<ol>' + bi('li', '', 'Save or screenshot the TaiwanSaver flyer.', '存下或截圖 TaiwanSaver 電子 DM。') + bi('li', '', 'Show it at the counter.', '到店出示。') + bi('li', '', 'Enjoy your discount.', '享受折扣。') + '</ol>\n' +
 '<div class="callout" data-en="<b>Your flyer</b> &middot; Recommended by Topology Travel. Show this page at the counter to enjoy the offer." data-zh="<b>你的電子 DM</b> &middot; 真程旅行社推薦。到店出示本頁即可享優惠。"><b>Your flyer</b> &middot; Recommended by Topology Travel. Show this page at the counter to enjoy the offer.</div>\n' +
 '</main>\n</body>\n</html>\n';
