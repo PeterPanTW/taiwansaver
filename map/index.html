@@ -206,16 +206,54 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_M
 
 var markers = [];
 var bounds = [];
-deals.forEach(function(d){
+function addMarker(d){
   var m = L.marker([d.lat, d.lng]).addTo(map);
   m.bindPopup(popupHtml(d));
   m._deal = d;
   markers.push(m);
   bounds.push([d.lat, d.lng]);
-});
+}
+deals.forEach(addMarker);
 
-if (bounds.length === 1) { map.setView(bounds[0], 16); }
-else { map.fitBounds(bounds, {padding:[40,40]}); }
+function fitAll(){
+  if (bounds.length === 1) { map.setView(bounds[0], 16); }
+  else if (bounds.length) { map.fitBounds(bounds, {padding:[40,40]}); }
+}
+fitAll();
+
+/* New merchants published via the form: pull from assets/deals.json and add
+   any not already hard-coded above (marker + list item). */
+fetch('../assets/deals.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(data){
+  var have = {};
+  deals.forEach(function(d){ var m=(d.url||'').match(/deals\/([^\/]+)/); if(m) have[m[1]]=1; });
+  document.querySelectorAll('.map-list a.m-btn[href*="/deals/"], .map-list a.m-btn[href^="../deals/"]').forEach(function(a){
+    var m=(a.getAttribute('href')||'').match(/deals\/([^\/]+)/); if(m) have[m[1]]=1;
+  });
+  var list = document.querySelector('.map-list');
+  (data.deals||[]).forEach(function(j){
+    if (have[j.slug]) return;
+    var d = {
+      name: j.name,
+      en: { type:j.tagEN, deal:j.dealEN, hours:'', view:'View deal', dir:'Directions' },
+      zh: { type:j.tagZH, deal:j.dealZH, hours:'', view:'看優惠', dir:'導航' },
+      lat: j.lat, lng: j.lng, url: '../deals/'+j.slug+'/', gmaps: j.gmaps||''
+    };
+    if (typeof j.lat === 'number' && typeof j.lng === 'number') { addMarker(d); }
+    if (list) {
+      var li = document.createElement('li');
+      li.innerHTML =
+        '<span class="m-name">'+escapeHtml(j.name)+'</span>'+
+        '<span class="m-deal" data-en="'+escapeHtml(j.dealEN)+'" data-zh="'+escapeHtml(j.dealZH)+'">'+escapeHtml(j.dealEN)+'</span>'+
+        '<span class="m-meta" data-en="'+escapeHtml(j.tagEN)+'" data-zh="'+escapeHtml(j.tagZH)+'">'+escapeHtml(j.tagEN)+'</span>'+
+        '<span class="m-act"><a class="m-btn" href="../deals/'+j.slug+'/" data-en="View deal" data-zh="看優惠">View deal</a>'+
+        (j.gmaps?'<a class="m-btn g" href="'+escapeHtml(j.gmaps)+'" target="_blank" rel="noopener" data-en="Directions" data-zh="導航">Directions</a>':'')+
+        '</span>';
+      list.appendChild(li);
+    }
+  });
+  fitAll();
+  if (window.TSLang) window.TSLang.set(window.TSLang.get());
+}).catch(function(){});
 
 // ── "Locate me" control ──────────────────────────────────────────────────
 // Uses the browser Geolocation API (free, no key; requires HTTPS).
