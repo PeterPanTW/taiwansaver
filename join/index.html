@@ -254,9 +254,19 @@ function done(url){
   stack=[];
   show('<div class="done"><div class="big">🎉</div>'+
   '<h1 class="qh">上架完成！</h1>'+
-  '<p class="qsub">你的中英雙語折扣頁已自動產生，約 1 分鐘後全球可見。確認信已寄到 '+esc(state.contactEmail)+'。</p>'+
-  (url?'<p><a class="qnext" style="text-decoration:none" href="'+esc(url)+'">看我的折扣頁 →</a></p>':'')+
-  '<p class="qhint">頁面同時會出現在 TaiwanSaver 的折扣列表和地圖上。資料想修改？回信給我們就可以。</p></div>', 9);
+  '<p class="qsub">資料已收到，確認信已寄到 '+esc(state.contactEmail)+'。你的中英雙語折扣頁正在建置（約 1 分鐘）…</p>'+
+  '<p id="livebox"><span class="qnext" style="opacity:.5;cursor:default"><span class="spin"></span>頁面建置中…</span></p>'+
+  '<p class="qhint">建好後按鈕會自動亮起。頁面也會自動出現在 TaiwanSaver 的折扣列表和地圖上。資料想修改？回信給我們就可以。</p></div>', 9);
+  if(!url) return;
+  var tries=0;
+  (function poll(){
+    tries++;
+    fetch(url,{method:'HEAD',cache:'no-store'}).then(function(r){
+      if(r.ok){ document.getElementById('livebox').innerHTML='<a class="qnext" style="text-decoration:none" href="'+esc(url)+'">頁面上線了，看我的折扣頁 →</a>'; }
+      else if(tries<40){ setTimeout(poll,5000); }
+      else { document.getElementById('livebox').innerHTML='<a class="qnext" style="text-decoration:none" href="'+esc(url)+'">看我的折扣頁 →</a><br><span class="qhint">若顯示 404，請過幾分鐘再開。</span>'; }
+    }).catch(function(){ if(tries<40) setTimeout(poll,5000); });
+  })();
 }
 
 step1();
