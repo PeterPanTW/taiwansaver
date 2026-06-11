@@ -26,7 +26,7 @@
 <meta name="twitter:description" content="Tap a pin to see the deal and how to redeem it. Free — just show the flyer.">
 <meta name="twitter:image" content="https://taiwansaver.com/assets/og.png">
 
-<meta name="theme-color" content="#1D3557">
+<meta name="theme-color" content="#225378">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="stylesheet" href="../assets/style.css">
@@ -245,8 +245,8 @@ function locateUser() {
     var ll = [pos.coords.latitude, pos.coords.longitude];
     var acc = pos.coords.accuracy || 50;
     if (youMarker) { map.removeLayer(youMarker); map.removeLayer(youCircle); }
-    youCircle = L.circle(ll, { radius: acc, color: '#1D3557', fillColor: '#1D3557', fillOpacity: 0.12, weight: 1 }).addTo(map);
-    youMarker = L.circleMarker(ll, { radius: 7, color: '#fff', weight: 2, fillColor: '#1D3557', fillOpacity: 1 }).addTo(map);
+    youCircle = L.circle(ll, { radius: acc, color: '#225378', fillColor: '#225378', fillOpacity: 0.12, weight: 1 }).addTo(map);
+    youMarker = L.circleMarker(ll, { radius: 7, color: '#fff', weight: 2, fillColor: '#225378', fillOpacity: 1 }).addTo(map);
     youMarker.bindPopup(currentLang() === 'zh' ? '你在這裡' : 'You are here');
     // Fit the user and all deal pins into view.
     map.fitBounds(bounds.concat([ll]), { padding: [40, 40] });
