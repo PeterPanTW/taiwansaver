@@ -300,7 +300,67 @@ function backfillExisting() {
   log_('BACKFILL-DONE', '', '回填完成：' + done + ' 筆，略過 ' + skip + ' 筆（測試）', '');
 }
 
-function slugify_(s) { var a = s.toLowerCase().replace(/[一-鿿]/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return a || ('store-' + Math.abs(hash_(s))); }
+function slugify_(s) {
+  var a = s.toLowerCase().replace(/[一-鿿]/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!a) {
+    // 純中文店名：先自動翻成英文再取網址（例：台灣好餐廳 → taiwan-good-restaurant）
+    try {
+      var en = LanguageApp.translate(s, '', 'en');
+      a = String(en).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 60).replace(/-+$/g, '');
+    } catch (e) {}
+  }
+  return a || ('store-' + Math.abs(hash_(s)));
+}
+
+/** ── 維運：一鍵下架店家（deal 頁、deals.json、sitemap、修改次數列）──
+ * 用法：在下方 cleanupSlug 填 slug → 函式選 runRemoveStore → 執行。 */
+var cleanupSlug = '';
+function runRemoveStore() { if (cleanupSlug) removeStore(cleanupSlug); }
+function cleanupTestData() { removeStore('demo-verify-diner'); removeStore('store-749845811'); }
+
+function removeStore(slug) {
+  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  var headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  // ① 刪 deal 頁
+  var api = 'https://api.github.com/repos/' + REPO + '/contents/deals/' + slug + '/index.html';
+  var g = UrlFetchApp.fetch(api + '?ref=' + BRANCH, { headers: headers, muteHttpExceptions: true });
+  if (g.getResponseCode() === 200) {
+    var sha = JSON.parse(g.getContentText()).sha;
+    UrlFetchApp.fetch(api, { method: 'delete', contentType: 'application/json', headers: headers,
+      payload: JSON.stringify({ message: 'Remove: deals/' + slug, sha: sha, branch: BRANCH }), muteHttpExceptions: true });
+  }
+  // ② deals.json 移除
+  try {
+    var japi = 'https://api.github.com/repos/' + REPO + '/contents/assets/deals.json';
+    var jg = UrlFetchApp.fetch(japi + '?ref=' + BRANCH, { headers: headers, muteHttpExceptions: true });
+    if (jg.getResponseCode() === 200) {
+      var meta = JSON.parse(jg.getContentText());
+      var data = JSON.parse(Utilities.newBlob(Utilities.base64Decode(meta.content.replace(/\n/g, ''))).getDataAsString('UTF-8'));
+      var before = data.deals.length;
+      data.deals = data.deals.filter(function (x) { return x.slug !== slug; });
+      if (data.deals.length !== before) githubPut_('assets/deals.json', JSON.stringify(data, null, 2) + '\n', 'Remove from deals.json: ' + slug);
+    }
+  } catch (e1) { log_('WARN', slug, 'removeStore deals.json：' + e1, ''); }
+  // ③ sitemap 移除
+  try {
+    var sapi = 'https://api.github.com/repos/' + REPO + '/contents/sitemap.xml';
+    var sg = UrlFetchApp.fetch(sapi + '?ref=' + BRANCH, { headers: headers, muteHttpExceptions: true });
+    if (sg.getResponseCode() === 200) {
+      var smeta = JSON.parse(sg.getContentText());
+      var xml = Utilities.newBlob(Utilities.base64Decode(smeta.content.replace(/\n/g, ''))).getDataAsString('UTF-8');
+      var re = new RegExp('[ ]*<url><loc>https://taiwansaver\\.com/deals/' + slug + '/</loc>[\\s\\S]*?</url>\\n?');
+      var nx = xml.replace(re, '');
+      if (nx !== xml) githubPut_('sitemap.xml', nx, 'Remove from sitemap: ' + slug);
+    }
+  } catch (e2) { log_('WARN', slug, 'removeStore sitemap：' + e2, ''); }
+  // ④ 修改次數表移除該列
+  try {
+    var sh = SpreadsheetApp.getActive().getSheetByName(COUNT_SHEET);
+    if (sh) { var data2 = sh.getDataRange().getValues();
+      for (var i = data2.length - 1; i >= 1; i--) { if (data2[i][1] === slug) sh.deleteRow(i + 1); } }
+  } catch (e3) { log_('WARN', slug, 'removeStore 修改次數：' + e3, ''); }
+  log_('REMOVE', slug, '已下架（頁面/deals.json/sitemap/計次）', '');
+}
 function hash_(s) { var h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; } return h; }
 
 /** GitHub 建立/更新檔案。回傳 true=檔案原本就存在(此次為更新)；false=新建 */
