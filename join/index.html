@@ -241,11 +241,29 @@ function review(){
     gtag('event','merchant_form_submit',{category:state.category});
     fetch(ENDPOINT,{method:'POST',body:body}).then(function(r){return r.json();}).then(function(res){
       if(res && res.ok){ done(res.url); }
-      else { throw new Error(res && res.error || 'unknown'); }
-    }).catch(function(e){
+      else if(res && res.error){ fail(res.error); }
+      else { confirmViaDealsJson(); }
+    }).catch(function(){ confirmViaDealsJson(); });
+
+    function fail(msg){
       btn.disabled=false; btn.textContent='免費上架 🚀';
-      err('送出失敗了，請再試一次；持續失敗請直接寄信給 peter@topologytravel.com');
-    });
+      err(msg==='缺必填欄位'||msg==='測試店名不上線' ? msg
+        : '送出失敗了，請再試一次；持續失敗請直接寄信給 peter@topologytravel.com');
+    }
+    /* 讀不到回應時（Google 跨網域偶發）：輪詢自家 deals.json 確認是否其實已上架，
+       避免店家誤以為失敗而重複送出（重複送出會被算成「修改」）。 */
+    function confirmViaDealsJson(){
+      var t0=Date.now();
+      btn.innerHTML='<span class="spin"></span>確認上架狀態中…請勿重複送出';
+      (function chk(){
+        fetch('../assets/deals.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
+          var hit=(data.deals||[]).filter(function(d){return d.name===state.name;})[0];
+          if(hit){ done('https://taiwansaver.com/deals/'+hit.slug+'/'); }
+          else if(Date.now()-t0<150000){ setTimeout(chk,8000); }
+          else { fail('timeout'); }
+        }).catch(function(){ if(Date.now()-t0<150000) setTimeout(chk,8000); else fail('timeout'); });
+      })();
+    }
   };
 }
 
