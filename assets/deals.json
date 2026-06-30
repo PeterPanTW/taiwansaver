@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12",
+  "updated": "2026-06-30",
   "deals": [
     {
       "slug": "yongjin",
@@ -84,6 +84,20 @@
       "lng": null,
       "gmaps": "",
       "added": "2026-06-10"
+    },
+    {
+      "slug": "feeling-bar",
+      "name": "Feeling Bar",
+      "tagEN": "🍸 Bar · Taipei",
+      "tagZH": "🍸 酒吧 Bar · 台北",
+      "dealEN": "Complimentary welcome drink",
+      "dealZH": "免費迎賓飲料 Welcome Drink",
+      "descEN": "Feeling Bar — show the TaiwanSaver flyer at the counter to redeem.",
+      "descZH": "Feeling Bar — 到店出示 TaiwanSaver 電子 DM 即可兌換。",
+      "lat": 25.089698,
+      "lng": 121.523849,
+      "gmaps": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B8%82%E5%A3%AB%E6%9E%97%E5%8D%80%E5%A4%A7%E5%8D%97%E8%B7%AF110%E8%99%9F",
+      "added": "2026-06-30"
     }
   ]
 }
