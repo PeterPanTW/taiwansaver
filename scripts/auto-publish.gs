@@ -427,16 +427,33 @@ function buildDealHtml_(slug, d) {
   function bi(tag, attrs, en, zh) { return '<' + tag + (attrs ? ' ' + attrs : '') + ' data-en="' + esc(en) + '" data-zh="' + esc(zh) + '">' + esc(en) + '</' + tag + '>'; }
   var discEN = tr(d.discount, 'en'), discZH = tr(d.discount, 'zh-TW');
   var hoursEN = tr(d.hours, 'en'), hoursZH = tr(d.hours, 'zh-TW');
-  var catEN = d.category || 'Local deal', catZH = d.category || '在地優惠';
+  var emoji = catEmoji_(d.category);
+  var catEN = emoji + ' ' + (tr(d.category, 'en') || 'Local deal') + ' · Taipei', catZH = emoji + ' ' + (d.category || '在地優惠') + ' · 台北';
   var ph = d.phone ? ' · ☎ ' + d.phone : '';
+  var ll = geocode_(d.address);
+  var gmaps = ll ? ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(d.address)) : '';
   var sumEN = d.name + ' offers travelers ' + discEN + '. Show the TaiwanSaver flyer at the counter to redeem.' + (hoursEN ? ' ' + hoursEN : '') + ' Address: ' + d.address + '.';
   var sumZH = d.name + '：出示 TaiwanSaver 電子 DM 即可享「' + discZH + '」。' + (hoursZH ? hoursZH + '。' : '') + '地址：' + d.address + '。';
-  var jsonld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: d.name, description: d.name + ' — ' + discEN + '. Show the TaiwanSaver flyer to redeem.', address: { '@type': 'PostalAddress', streetAddress: d.address, addressRegion: 'Taipei', addressCountry: 'TW' }, telephone: d.phone, url: 'https://taiwansaver.com/deals/' + slug + '/', makesOffer: { '@type': 'Offer', name: discEN } };
+  var jsonld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: d.name, description: d.name + ' — ' + discEN + '. Show the TaiwanSaver flyer to redeem.', address: { '@type': 'PostalAddress', streetAddress: d.address, addressRegion: 'Taipei', addressCountry: 'TW' }, telephone: d.phone, url: 'https://taiwansaver.com/deals/' + slug + '/', image: 'https://taiwansaver.com/assets/og.png', makesOffer: { '@type': 'Offer', name: discEN, eligibleCustomerType: 'Tourist' } };
+  if (ll) jsonld.geo = { '@type': 'GeoCoordinates', latitude: ll.lat, longitude: ll.lng };
   return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
+'<!-- Google Analytics (GA4) -->\n' +
+'<script async src="https://www.googletagmanager.com/gtag/js?id=G-LFG20DT8BH"></script>\n' +
+'<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag(\'js\',new Date());gtag(\'config\',\'G-LFG20DT8BH\');</script>\n' +
 '<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
 '<title>' + esc(d.name) + ' — ' + esc(discEN) + ' | Taipei | TaiwanSaver</title>\n' +
 '<meta name="description" content="' + esc(sumEN) + '">\n' +
+'<meta name="robots" content="index,follow,max-image-preview:large">\n' +
 '<link rel="canonical" href="https://taiwansaver.com/deals/' + slug + '/">\n' +
+'<meta property="og:type" content="website"><meta property="og:site_name" content="TaiwanSaver">\n' +
+'<meta property="og:title" content="' + esc(d.name) + ' — ' + esc(discEN) + ' | Taipei">\n' +
+'<meta property="og:description" content="' + esc(sumEN) + '">\n' +
+'<meta property="og:url" content="https://taiwansaver.com/deals/' + slug + '/">\n' +
+'<meta property="og:image" content="https://taiwansaver.com/assets/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">\n' +
+'<meta property="og:locale" content="en"><meta property="og:locale:alternate" content="zh_TW">\n' +
+'<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + esc(d.name) + ' — ' + esc(discEN) + '"><meta name="twitter:image" content="https://taiwansaver.com/assets/og.png">\n' +
+'<meta name="theme-color" content="#225378">\n' +
+'<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">\n' +
 '<link rel="stylesheet" href="https://taiwansaver.com/assets/style.css">\n' +
 '<script defer src="https://taiwansaver.com/assets/lang.js"></script>\n' +
 '<script type="application/ld+json">' + JSON.stringify(jsonld) + '</script>\n</head>\n<body>\n' +
@@ -448,9 +465,12 @@ bi('h1', '', d.name, d.name) + '\n' +
 bi('p', 'class="deal" style="font-size:22px;color:var(--red);font-weight:800"', discEN, discZH) + '\n' +
 bi('p', 'class="summary"', sumEN, sumZH) + '\n' +
 bi('h2', '', 'What is the discount?', '有什麼折扣？') + bi('p', '', discEN + ' — show the flyer at the counter, no booking needed.', discZH + ' — 到店出示電子 DM 即可，免預約。') + '\n' +
-bi('h2', '', 'Where is it?', '在哪裡？') + bi('p', '', d.address + ph, d.address + ph) + '\n' +
+bi('h2', '', 'Where is it?', '在哪裡？') + '<p>' + esc(d.address + ph) + (gmaps ? ' · <a href="' + gmaps + '" target="_blank" rel="noopener" data-en="Open in Google Maps →" data-zh="用 Google 地圖開啟 →">Open in Google Maps →</a>' : '') + '</p>\n' +
 (d.hours ? bi('h2', '', 'What are the opening hours?', '營業時間？') + bi('p', '', hoursEN, hoursZH) + '\n' : '') +
-bi('h2', '', 'How do I redeem it?', '怎麼兌換？') + '<ol>' + bi('li', '', 'Save or screenshot the TaiwanSaver flyer.', '存下或截圖 TaiwanSaver 電子 DM。') + bi('li', '', 'Show it at the counter.', '到店出示。') + bi('li', '', 'Enjoy your discount.', '享受折扣。') + '</ol>\n' +
-'<div class="callout" data-en="<b>Your flyer</b> &middot; Recommended by Topology Travel. Show this page at the counter to enjoy the offer." data-zh="<b>你的電子 DM</b> &middot; 真程旅行社推薦。到店出示本頁即可享優惠。"><b>Your flyer</b> &middot; Recommended by Topology Travel. Show this page at the counter to enjoy the offer.</div>\n' +
-'</main>\n</body>\n</html>\n';
+bi('h2', '', 'How do I redeem it?', '怎麼兌換？') + '<ol>' + bi('li', '', 'Save or screenshot the TaiwanSaver flyer.', '存下或截圖 TaiwanSaver 電子 DM。') + bi('li', '', 'Show it to the staff when you order.', '點餐時出示給店員看。') + bi('li', '', 'Enjoy your discount — no app, no code.', '享受折扣 — 免 App、免代碼。') + '</ol>\n' +
+'<div class="callout" data-en="<b>Your flyer</b> · Recommended by Topology Travel. Show this page at the counter to enjoy the offer." data-zh="<b>你的電子 DM</b> · 真程旅行社推薦。到店出示本頁即可享優惠。"><b>Your flyer</b> · Recommended by Topology Travel. Show this page at the counter to enjoy the offer.</div>\n' +
+'<div class="band"><a style="color:#fff" href="https://taiwansaver.com/travelers/" data-en="← All Taipei deals" data-zh="← 所有台北折扣">← All Taipei deals</a> &nbsp;·&nbsp; <a style="color:#fff" href="https://taiwansaver.com/map/" data-en="View map →" data-zh="看地圖 →">View map →</a></div>\n' +
+'</main>\n' +
+'<footer class="center"><p data-en="TaiwanSaver · operated by Topology Travel / 真程旅行社 · deals verified before listing" data-zh="TaiwanSaver · 由真程旅行社經營 · 上架前皆經查證">TaiwanSaver · operated by Topology Travel / 真程旅行社 · deals verified before listing</p></footer>\n' +
+'</body>\n</html>\n';
 }
